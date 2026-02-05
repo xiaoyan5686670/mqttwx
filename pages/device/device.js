@@ -10,6 +10,9 @@ Page({
     // 设备列表
     deviceList: [],
     currentDeviceId: null,
+    
+    // UI 状态
+    showMoreMenu: false,
 
     // 当前设备配置
     currentDeviceName: '',
@@ -151,19 +154,11 @@ Page({
           this.switchToDevice(list[0].id);
         }
       } else {
-        // 首次使用，创建默认设备
-        const defaultDevice = {
-          id: Date.now().toString(),
-          name: '设备1',
-          subscribeTopic: 'device/sensor/data',
-          publishRelayTopic: 'pc/1',
-          publishRelayInTopic: 'device/relay_in/control',
-          createdAt: new Date().toISOString()
-        };
+        // 首次使用，不创建默认设备，列表为空
         this.setData({
-          deviceList: [defaultDevice],
-          currentDeviceId: defaultDevice.id,
-          currentDeviceName: defaultDevice.name,
+          deviceList: [],
+          currentDeviceId: null,
+          currentDeviceName: '',
           subscribeTopic: defaultDevice.subscribeTopic,
           publishRelayTopic: defaultDevice.publishRelayTopic,
           publishRelayInTopic: defaultDevice.publishRelayInTopic
@@ -913,6 +908,21 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  // 更多菜单控制
+  toggleMoreMenu() {
+    this.setData({
+      showMoreMenu: !this.data.showMoreMenu
+    });
+    console.log('toggleMoreMenu called, showMoreMenu:', this.data.showMoreMenu);
+  },
+  
+  hideMoreMenu() {
+    this.setData({
+      showMoreMenu: false
+    });
+    console.log('hideMoreMenu called');
   },
 
   onUnload() {

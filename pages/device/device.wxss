@@ -12,6 +12,7 @@ page {
 
 /* ================== 头部 ================== */
 .device-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -125,6 +126,105 @@ page {
   font-size: 24px;
   color: #00F5FF;
   font-weight: bold;
+}
+
+/* ================== 更多菜单 ================== */
+.more-menu-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.more-menu-icon {
+  font-size: 20px;
+  color: #00F5FF;
+  font-weight: bold;
+  transform: rotate(90deg);
+}
+
+.more-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 16px;
+  background: rgba(16, 33, 64, 0.95);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  min-width: 160px;
+  margin-top: 8px;
+  /* 确保不遮挡按钮 */
+  pointer-events: none;
+}
+
+.more-menu-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  /* 显示时才允许点击 */
+  pointer-events: auto;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:hover {
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.menu-item:active {
+  background: rgba(0, 245, 255, 0.2);
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+.menu-text {
+  font-size: 14px;
+  color: #E0E0E0;
+  flex: 1;
+}
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.menu-overlay.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 .sensor-manage-icon, .name-icon, .refresh-icon, .config-icon {
@@ -722,4 +822,31 @@ page {
 .device-manage-delete:active {
   transform: scale(0.9);
   background: rgba(255, 100, 100, 0.1);
+}
+
+/* ================== 空状态提示 ================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #A8B8D4;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 18px;
+  color: #E0E0E0;
+  margin-bottom: 8px;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #8892B0;
 }

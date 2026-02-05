@@ -1,131 +1,156 @@
 <!-- device.wxml -->
 <view class="device-container">
-  <!-- 顶部状态栏 -->
-  <view class="device-header">
-    <view class="header-left">
-      <view class="header-status {{isConnected ? 'connected' : 'disconnected'}}">
-        <view class="status-dot"></view>
-        <text class="status-text">{{connectionText}}</text>
+    <!-- 顶部状态栏 -->
+    <view class="device-header">
+      <view class="header-left">
+        <view class="header-status {{isConnected ? 'connected' : 'disconnected'}}">
+          <view class="status-dot"></view>
+          <text class="status-text">{{connectionText}}</text>
+        </view>
+        <view class="device-selector" bindtap="showDeviceManageDialog">
+          <text class="device-name">{{currentDeviceName || '设备'}}</text>
+          <text class="device-arrow">▼</text>
+        </view>
       </view>
-      <view class="device-selector" bindtap="showDeviceManageDialog">
-        <text class="device-name">{{currentDeviceName || '设备'}}</text>
-        <text class="device-arrow">▼</text>
+      <view class="header-actions">
+        <view class="add-device-btn" bindtap="showAddDeviceDialog">
+          <text class="add-device-icon">+</text>
+        </view>
+        
+        <!-- 更多操作菜单 -->
+        <view class="more-menu-btn" bindtap="toggleMoreMenu">
+          <text class="more-menu-icon">⋮</text>
+        </view>
+        
+        <!-- 下拉菜单 -->
+        <view class="more-menu-dropdown {{showMoreMenu ? 'show' : ''}}">
+          <view class="menu-item" bindtap="showSensorManageDialog">
+            <text class="menu-icon">📊</text>
+            <text class="menu-text">传感器管理</text>
+          </view>
+          <view class="menu-item" bindtap="showNameConfigDialog">
+            <text class="menu-icon">✏</text>
+            <text class="menu-text">继电器名称</text>
+          </view>
+          <view class="menu-item" bindtap="refreshData">
+            <text class="menu-icon">↻</text>
+            <text class="menu-text">刷新数据</text>
+          </view>
+          <view class="menu-item" bindtap="showTopicConfigDialog">
+            <text class="menu-icon">⚙</text>
+            <text class="menu-text">主题配置</text>
+          </view>
+        </view>
+        
+        <!-- 遮罩层 -->
+        <view class="menu-overlay {{showMoreMenu ? 'show' : ''}}" bindtap="hideMoreMenu"></view>
       </view>
     </view>
-    <view class="header-actions">
-      <view class="add-device-btn" bindtap="showAddDeviceDialog">
-        <text class="add-device-icon">+</text>
-      </view>
-      <view class="sensor-manage-btn" bindtap="showSensorManageDialog">
-        <text class="sensor-manage-icon">📊</text>
-      </view>
-      <view class="name-btn" bindtap="showNameConfigDialog">
-        <text class="name-icon">✏</text>
-      </view>
-      <view class="refresh-btn" bindtap="refreshData">
-        <text class="refresh-icon">↻</text>
-      </view>
-      <view class="config-btn" bindtap="showTopicConfigDialog">
-        <text class="config-icon">⚙</text>
-      </view>
-    </view>
-  </view>
 
   <!-- 主内容区 -->
-  <scroll-view class="device-content" scroll-y="true">
-    <!-- 温湿度卡片 -->
-    <view class="sensor-card">
-      <view class="card-header">
-        <text class="card-title">传感器监测</text>
-        <view class="card-decoration"></view>
-      </view>
+  <view wx:if="{{deviceList.length > 0}}">
+    <scroll-view class="device-content" scroll-y="true">
+      <!-- 温湿度卡片 -->
+      <view class="sensor-card">
+        <view class="card-header">
+          <text class="card-title">传感器监测</text>
+          <view class="card-decoration"></view>
+        </view>
 
-      <!-- 动态渲染传感器 -->
-      <block wx:for="{{sensorConfig}}" wx:key="id">
-        <view class="sensor-group" wx:if="{{item.visible}}">
-          <view class="sensor-header">
-            <text class="sensor-label">{{item.label}}</text>
-            <view class="sensor-icon {{item.type}}">{{item.type === 'env' ? '🌡' : '❄'}}</view>
-          </view>
-          <view class="sensor-values">
-            <view class="value-item temp">
-              <text class="value-label">温度</text>
-              <text class="value-number">{{deviceData[item.tempField] !== null ? deviceData[item.tempField] : '--'}}{{item.unit}}</text>
-              <view class="value-bar">
-                <view class="bar-fill {{item.type === 'env' ? '' : 'blue'}}" style="width: {{deviceData[item.tempField] !== null ? Math.min(Math.max((deviceData[item.tempField] + (item.unit === '°C' ? 10 : -32)) / (item.unit === '°C' ? 50 : 100) * 100, 0), 100) : 0}}%"></view>
+        <!-- 动态渲染传感器 -->
+        <block wx:for="{{sensorConfig}}" wx:key="id">
+          <view class="sensor-group" wx:if="{{item.visible}}">
+            <view class="sensor-header">
+              <text class="sensor-label">{{item.label}}</text>
+              <view class="sensor-icon {{item.type}}">{{item.type === 'env' ? '🌡' : '❄'}}</view>
+            </view>
+            <view class="sensor-values">
+              <view class="value-item temp">
+                <text class="value-label">温度</text>
+                <text class="value-number">{{deviceData[item.tempField] !== null ? deviceData[item.tempField] : '--'}}{{item.unit}}</text>
+                <view class="value-bar">
+                  <view class="bar-fill {{item.type === 'env' ? '' : 'blue'}}" style="width: 0%;"></view>
+                </view>
+              </view>
+              <view class="value-item humidity" wx:if="{{item.type === 'env'}}">
+                <text class="value-label">湿度</text>
+                <text class="value-number">{{deviceData[item.humidityField] !== null ? deviceData[item.humidityField] : '--'}}%</text>
+                <view class="value-bar">
+                  <view class="bar-fill blue" style="width: 0%;"></view>
+                </view>
               </view>
             </view>
-            <view class="value-item humidity" wx:if="{{item.type === 'env'}}">
-              <text class="value-label">湿度</text>
-              <text class="value-number">{{deviceData[item.humidityField] !== null ? deviceData[item.humidityField] : '--'}}%</text>
-              <view class="value-bar">
-                <view class="bar-fill blue" style="width: {{deviceData[item.humidityField] !== null ? Math.min(Math.max(deviceData[item.humidityField], 0), 100) : 0}}%"></view>
-              </view>
+          </view>
+        </block>
+
+        <!-- 更新时间 -->
+        <view class="update-time">
+          <text class="time-label">最后更新: </text>
+          <text class="time-value">{{lastUpdateTime || '未接收数据'}}</text>
+          <text wx:if="{{dataTimeout}}" class="timeout-warning"> (数据超时)</text>
+        </view>
+      </view>
+
+      <!-- 继电器控制卡片 -->
+      <view class="relay-card">
+        <view class="card-header">
+          <text class="card-title">继电器控制</text>
+          <view class="card-decoration"></view>
+        </view>
+
+        <!-- 主继电器 -->
+        <view class="relay-control {{isRelayChanging ? 'changing' : ''}}">
+          <view class="relay-info">
+            <text class="relay-name">{{relayNames.main}}</text>
+            <text class="relay-status {{relay_status}}">{{relay_status === 'on' ? '已开启' : '已关闭'}}</text>
+            <text wx:if="{{isRelayChanging}}" class="changing-hint">同步中...</text>
+          </view>
+          <view class="relay-switch {{relay_status}} {{isRelayChanging ? 'disabled' : ''}}" bindtap="toggleRelay">
+            <view class="switch-track">
+              <view class="switch-knob"></view>
             </view>
+            <view class="switch-glow"></view>
           </view>
         </view>
-      </block>
 
-      <!-- 更新时间 -->
-      <view class="update-time">
-        <text class="time-label">最后更新: </text>
-        <text class="time-value">{{lastUpdateTime || '未接收数据'}}</text>
-        <text wx:if="{{dataTimeout}}" class="timeout-warning"> (数据超时)</text>
-      </view>
-    </view>
-
-    <!-- 继电器控制卡片 -->
-    <view class="relay-card">
-      <view class="card-header">
-        <text class="card-title">继电器控制</text>
-        <view class="card-decoration"></view>
-      </view>
-
-      <!-- 主继电器 -->
-      <view class="relay-control {{isRelayChanging ? 'changing' : ''}}">
-        <view class="relay-info">
-          <text class="relay-name">{{relayNames.main}}</text>
-          <text class="relay-status {{relay_status}}">{{relay_status === 'on' ? '已开启' : '已关闭'}}</text>
-          <text wx:if="{{isRelayChanging}}" class="changing-hint">同步中...</text>
-        </view>
-        <view class="relay-switch {{relay_status}} {{isRelayChanging ? 'disabled' : ''}}" bindtap="toggleRelay">
-          <view class="switch-track">
-            <view class="switch-knob"></view>
+        <!-- 内部继电器 -->
+        <view class="relay-control">
+          <view class="relay-info">
+            <text class="relay-name">{{relayNames.internal}}</text>
+            <text class="relay-status {{relay_in_status}}">{{relay_in_status === 'on' ? '已开启' : '已关闭'}}</text>
           </view>
-          <view class="switch-glow"></view>
-        </view>
-      </view>
-
-      <!-- 内部继电器 -->
-      <view class="relay-control">
-        <view class="relay-info">
-          <text class="relay-name">{{relayNames.internal}}</text>
-          <text class="relay-status {{relay_in_status}}">{{relay_in_status === 'on' ? '已开启' : '已关闭'}}</text>
-        </view>
-        <view class="relay-switch {{relay_in_status}}" bindtap="toggleRelayIn">
-          <view class="switch-track">
-            <view class="switch-knob"></view>
+          <view class="relay-switch {{relay_in_status}}" bindtap="toggleRelayIn">
+            <view class="switch-track">
+              <view class="switch-knob"></view>
+            </view>
+            <view class="switch-glow"></view>
           </view>
-          <view class="switch-glow"></view>
         </view>
       </view>
-    </view>
 
-    <!-- 订阅状态 -->
-    <view class="status-card">
-      <view class="status-row">
-        <text class="status-row-label">订阅主题</text>
-        <text class="status-row-value">{{subscribeTopic}}</text>
+      <!-- 订阅状态 -->
+      <view class="status-card">
+        <view class="status-row">
+          <text class="status-row-label">订阅主题</text>
+          <text class="status-row-value">{{subscribeTopic}}</text>
+        </view>
+        <view class="status-row">
+          <text class="status-row-label">订阅状态</text>
+          <text class="status-row-value {{isSubscribed ? 'active' : 'inactive'}}">{{isSubscribed ? '已订阅' : '未订阅'}}</text>
+        </view>
       </view>
-      <view class="status-row">
-        <text class="status-row-label">订阅状态</text>
-        <text class="status-row-value {{isSubscribed ? 'active' : 'inactive'}}">{{isSubscribed ? '已订阅' : '未订阅'}}</text>
-      </view>
-    </view>
 
-    <!-- 底部留白 -->
-    <view class="bottom-spacer"></view>
-  </scroll-view>
+      <!-- 底部留白 -->
+      <view class="bottom-spacer"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 空状态提示 -->
+  <view wx:else class="empty-state">
+    <text class="empty-icon">📱</text>
+    <text class="empty-text">暂无设备</text>
+    <text class="empty-hint">请点击右上角“+”添加设备</text>
+  </view>
 
   <!-- 主题配置对话框 -->
   <view class="dialog-mask" wx:if="{{showTopicConfig}}" bindtap="hideTopicConfigDialog">
