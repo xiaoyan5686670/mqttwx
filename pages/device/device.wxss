@@ -1,0 +1,501 @@
+/* device.wxss */
+page {
+  background: linear-gradient(180deg, #0A0F1D 0%, #141E30 50%, #0A0F1D 100%);
+  min-height: 100vh;
+}
+
+.device-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================== 头部 ================== */
+.device-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 50px 16px 16px;
+  background: linear-gradient(180deg, rgba(16, 33, 64, 0.95) 0%, rgba(10, 25, 47, 0.9) 100%);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 20px;
+}
+
+.header-status.connected {
+  border-color: rgba(0, 255, 136, 0.5);
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.header-status.disconnected {
+  border-color: rgba(255, 100, 100, 0.5);
+  background: rgba(255, 100, 100, 0.1);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00F5FF;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.header-status.connected .status-dot {
+  background: #00FF88;
+}
+
+.header-status.disconnected .status-dot {
+  background: #FF6464;
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.status-text {
+  font-size: 13px;
+  color: #A8B8D4;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.name-btn, .refresh-btn, .config-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.name-icon, .refresh-icon, .config-icon {
+  font-size: 20px;
+  color: #00F5FF;
+}
+
+/* ================== 主内容 ================== */
+.device-content {
+  flex: 1;
+  padding: 16px;
+  padding-bottom: 80px;
+}
+
+.bottom-spacer {
+  height: 20px;
+}
+
+/* ================== 卡片通用 ================== */
+.sensor-card, .relay-card, .status-card {
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.6) 0%, rgba(10, 25, 47, 0.7) 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(0, 245, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E8F4FF;
+  letter-spacing: 0.5px;
+}
+
+.card-decoration {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(0, 245, 255, 0.4), transparent);
+  margin-left: 12px;
+}
+
+/* ================== 传感器 ================== */
+.sensor-group {
+  background: rgba(0, 245, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.sensor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sensor-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #A8B8D4;
+}
+
+.sensor-icon {
+  font-size: 24px;
+}
+
+.sensor-icon.temperature {
+  filter: drop-shadow(0 0 8px rgba(255, 150, 50, 0.5));
+}
+
+.sensor-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.value-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.value-label {
+  font-size: 12px;
+  color: #6B7D94;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.value-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #E8F4FF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+}
+
+.value-bar {
+  height: 4px;
+  background: rgba(0, 245, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD700, #FF8C00);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 8px rgba(255, 140, 0, 0.5);
+}
+
+.bar-fill.blue {
+  background: linear-gradient(90deg, #00F5FF, #0080FF);
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+}
+
+.update-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 245, 255, 0.1);
+}
+
+.time-label {
+  font-size: 13px;
+  color: #6B7D94;
+}
+
+.time-value {
+  font-size: 13px;
+  color: #00F5FF;
+}
+
+.timeout-warning {
+  font-size: 13px;
+  color: #FF6464;
+  font-weight: 600;
+}
+
+/* ================== 继电器控制 ================== */
+.relay-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(0, 245, 255, 0.03);
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.relay-control.changing {
+  background: rgba(0, 245, 255, 0.08);
+  border-color: rgba(0, 245, 255, 0.3);
+}
+
+.relay-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relay-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #E8F4FF;
+}
+
+.relay-status {
+  font-size: 13px;
+  color: #6B7D94;
+}
+
+.relay-status.on {
+  color: #00FF88;
+}
+
+.relay-status.off {
+  color: #FF6464;
+}
+
+.changing-hint {
+  font-size: 12px;
+  color: #00F5FF;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.relay-switch {
+  position: relative;
+  width: 60px;
+  height: 34px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.relay-switch.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switch-track {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 100, 100, 0.2);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  border-radius: 17px;
+  transition: all 0.3s ease;
+}
+
+.relay-switch.on .switch-track {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: rgba(0, 255, 136, 0.4);
+}
+
+.switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  background: #FF6464;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(255, 100, 100, 0.5);
+  transition: all 0.3s ease;
+}
+
+.relay-switch.on .switch-knob {
+  left: calc(100% - 29px);
+  background: #00FF88;
+  box-shadow: 0 2px 8px rgba(0, 255, 136, 0.5);
+}
+
+.switch-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 34px;
+  border-radius: 17px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.relay-switch:active:not(.disabled) .switch-glow {
+  opacity: 0.3;
+}
+
+.relay-switch.on .switch-glow {
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.3), transparent 70%);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ================== 状态卡片 ================== */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+}
+
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.status-row-label {
+  font-size: 14px;
+  color: #A8B8D4;
+}
+
+.status-row-value {
+  font-size: 14px;
+  color: #6B7D94;
+  max-width: 50%;
+  text-align: right;
+  word-break: break-all;
+}
+
+.status-row-value.active {
+  color: #00FF88;
+}
+
+.status-row-value.inactive {
+  color: #FF6464;
+}
+
+/* ================== 对话框 ================== */
+.dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog-content {
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.98), rgba(10, 25, 47, 0.99));
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 20px;
+  width: 85%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #00F5FF;
+  letter-spacing: 1px;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #6B7D94;
+}
+
+.dialog-body {
+  padding: 20px;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.config-item:last-child {
+  margin-bottom: 0;
+}
+
+.config-label {
+  font-size: 13px;
+  color: #A8B8D4;
+  font-weight: 500;
+}
+
+.config-input {
+  height: 44px;
+  padding: 0 14px;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #E8F4FF;
+}
+
+.config-input::placeholder {
+  color: #5A6B80;
+}
+
+.dialog-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.dialog-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-btn.secondary {
+  background: rgba(0, 245, 255, 0.08);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  color: #A8B8D4;
+}
+
+.dialog-btn.primary {
+  background: rgba(0, 245, 255, 0.2);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  color: #00F5FF;
+}

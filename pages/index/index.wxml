@@ -377,6 +377,13 @@
       </view>
       <text class="nav-label">首页</text>
     </view>
+    <view class="tech-nav-item" bindtap="navigateToDevice">
+      <view class="nav-icon-container">
+        <image src="/assets/icons/device.svg" class="nav-icon-img" mode="aspectFit" />
+        <view class="nav-icon-glow"></view>
+      </view>
+      <text class="nav-label">设备</text>
+    </view>
     <view class="tech-nav-item {{activeTab === 'messages' ? 'active' : ''}}" bindtap="switchTab" data-tab="messages">
       <view class="nav-icon-container">
         <image src="/assets/icons/message.svg" class="nav-icon-img" mode="aspectFit" />

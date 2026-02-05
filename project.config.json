@@ -1,6 +1,6 @@
 {
   "compileType": "miniprogram",
-  "libVersion": "trial",
+  "libVersion": "3.14.1",
   "packOptions": {
     "ignore": [],
     "include": []
@@ -34,9 +34,10 @@
     "skipAudits": false,
     "network": {
       "ignoreHttpsErrors": true
-    }
+    },
+    "disableSWC": true
   },
-  "appid": "wx4f62ef17234e51c0",  
+  "appid": "wx4f62ef17234e51c0",
   "projectname": "miniprogram-1",
   "condition": {},
   "editorSetting": {

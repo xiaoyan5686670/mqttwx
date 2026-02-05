@@ -17,7 +17,7 @@ class MQTTClient {
     
     // 默认服务器配置
     this.defaultConfig = {
-      broker: 'broker.emqx.io',
+      broker: '172.16.208.176',
       port: 8084,
       protocol: 'wss',
       clientId: 'miniprogram_' + Math.random().toString(16).substr(2, 8),
@@ -26,8 +26,8 @@ class MQTTClient {
       reconnectPeriod: 5000,
       connectTimeout: 30 * 1000,
       connackTimeout: 10 * 1000,
-      username: '',  // 添加用户名支持
-      password: '',  // 添加密码支持
+      username: 'hhb',  // 添加用户名支持
+      password: '123456',  // 添加密码支持
       ignoreSSLErrors: true  // 添加SSL错误忽略选项
     };
     
@@ -704,14 +704,16 @@ class MQTTClient {
     this.socket = null;
     clearTimeout(this.connackTimeout);
     this.triggerConnectCallbacks(false);
-    
-    // Schedule reconnection
-    if (this.config.reconnectPeriod > 0) {
+
+    // 只在未主动停止时才重连
+    if (this.config.reconnectPeriod > 0 && !this.stopReconnect) {
       console.log(`MQTTClient: Scheduling reconnection in ${this.config.reconnectPeriod}ms`);
       this.reconnectTimer = setTimeout(() => {
-        this.connect().catch(err => {
-          console.error('MQTTClient: Reconnection failed:', err);
-        });
+        if (!this.stopReconnect) {
+          this.connect().catch(err => {
+            console.error('MQTTClient: Reconnection failed:', err);
+          });
+        }
       }, this.config.reconnectPeriod);
     }
   }
@@ -721,20 +723,22 @@ class MQTTClient {
     this.isConnected = false;
     this.isConnecting = false;
     this.socket = null;
-    
+
     clearInterval(this.pingTimer);
     this.pingTimer = null;
     clearTimeout(this.connackTimeout);
-    
+
     this.triggerDisconnectCallbacks();
-    
-    // Schedule reconnection if enabled
-    if (this.config.reconnectPeriod > 0) {
+
+    // 只在未主动停止时才重连
+    if (this.config.reconnectPeriod > 0 && !this.stopReconnect) {
       console.log(`MQTTClient: Scheduling reconnection in ${this.config.reconnectPeriod}ms`);
       this.reconnectTimer = setTimeout(() => {
-        this.connect().catch(err => {
-          console.error('MQTTClient: Reconnection failed:', err);
-        });
+        if (!this.stopReconnect) {
+          this.connect().catch(err => {
+            console.error('MQTTClient: Reconnection failed:', err);
+          });
+        }
       }, this.config.reconnectPeriod);
     }
   }
@@ -781,14 +785,16 @@ class MQTTClient {
   // Disconnect from broker
   disconnect() {
     console.log('MQTTClient: Disconnecting...');
-    
+
+    // 停止自动重连
+    this.stopReconnect = true;
     clearTimeout(this.reconnectTimer);
     clearTimeout(this.connackTimeout);
     clearInterval(this.pingTimer);
     this.reconnectTimer = null;
     this.connackTimeout = null;
     this.pingTimer = null;
-    
+
     if (this.socket) {
       this.socket.close({
         success: () => {
@@ -799,10 +805,24 @@ class MQTTClient {
         }
       });
     }
-    
+
     this.isConnected = false;
     this.isConnecting = false;
     this.socket = null;
+  }
+
+  // 取消重连（用户主动取消时调用）
+  cancelReconnect() {
+    console.log('MQTTClient: Canceling reconnection');
+    this.stopReconnect = true;
+    this.isConnecting = false;
+    clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = null;
+  }
+
+  // 重置重连标志（用于下次连接时重新启用自动重连）
+  resetReconnectFlag() {
+    this.stopReconnect = false;
   }
 
   // Subscribe to a topic

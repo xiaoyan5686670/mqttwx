@@ -1196,6 +1196,7 @@ page {
   right: 0;
   height: 70px;
   z-index: 100;
+  display: flex;
 }
 
 .nav-bg {
@@ -1221,6 +1222,7 @@ page {
   height: 100%;
   z-index: 1;
   transition: all 0.3s ease;
+  min-width: 0; /* 防止内容溢出 */
 }
 
 .nav-icon-container {

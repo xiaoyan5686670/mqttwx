@@ -45,8 +45,8 @@ Page({
       port: 8084,
       protocol: 'wss',
       clientId: '',
-      username: '',  // 用户名
-      password: ''   // 密码
+      username: 'hhb',  // 用户名
+      password: '123456'   // 密码
     },
     presetServers: [],
     customServers: [],
@@ -202,7 +202,7 @@ Page({
   handleConnectionError(errorMsg) {
     console.error('Connection error:', errorMsg);
     const attempts = this.data.connectionAttempts + 1;
-    
+
     this.setData({
       isConnected: false,
       isConnecting: false,
@@ -214,22 +214,29 @@ Page({
       debugInfo: `连接错误 (${attempts}次尝试): ${errorMsg}`,
       connectionAttempts: attempts
     });
-    
+
     let content = errorMsg;
     if (attempts > 1) {
       content += `\n\n这是第${attempts}次连接尝试。`;
     }
     content += '\n\n可能的原因:\n• 网络连接问题\n• 服务器不可用\n• 防火墙阻止连接\n• 域名未添加到合法域名列表';
-    
+
     wx.showModal({
       title: '连接失败',
       content: content,
       showCancel: true,
-      cancelText: '取消',
+      cancelText: '取消重连',
       confirmText: '重试',
       success: (res) => {
         if (res.confirm) {
           this.retryConnection();
+        } else {
+          // 用户取消，停止自动重连
+          mqttClient.cancelReconnect();
+          wx.showToast({
+            title: '已取消重连',
+            icon: 'none'
+          });
         }
       }
     });
@@ -242,6 +249,9 @@ Page({
     }
 
     console.log('Attempting to connect to MQTT broker');
+
+    // 重置重连标志，允许自动重连
+    mqttClient.resetReconnectFlag();
 
     this.setData({
       isConnecting: true,
@@ -273,6 +283,8 @@ Page({
   disconnect() {
     if (!this.data.isConnected) {
       console.log('Not connected, nothing to disconnect');
+      // 即使未连接，也要停止可能的自动重连
+      mqttClient.cancelReconnect();
       return;
     }
 
@@ -990,6 +1002,13 @@ Page({
     const tab = e.currentTarget.dataset.tab || 'home';
     this.setData({
       activeTab: tab
+    });
+  },
+
+  // 导航到设备页面
+  navigateToDevice() {
+    wx.navigateTo({
+      url: '/pages/device/device'
     });
   },
 

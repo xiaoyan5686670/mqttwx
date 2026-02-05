@@ -1,0 +1,199 @@
+<!-- device.wxml -->
+<view class="device-container">
+  <!-- 顶部状态栏 -->
+  <view class="device-header">
+    <view class="header-status {{isConnected ? 'connected' : 'disconnected'}}">
+      <view class="status-dot"></view>
+      <text class="status-text">{{connectionText}}</text>
+    </view>
+    <view class="header-actions">
+      <view class="name-btn" bindtap="showNameConfigDialog">
+        <text class="name-icon">✏</text>
+      </view>
+      <view class="refresh-btn" bindtap="refreshData">
+        <text class="refresh-icon">↻</text>
+      </view>
+      <view class="config-btn" bindtap="showTopicConfigDialog">
+        <text class="config-icon">⚙</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主内容区 -->
+  <scroll-view class="device-content" scroll-y="true">
+    <!-- 温湿度卡片 -->
+    <view class="sensor-card">
+      <view class="card-header">
+        <text class="card-title">温湿度监测</text>
+        <view class="card-decoration"></view>
+      </view>
+
+      <!-- 传感器1 -->
+      <view class="sensor-group">
+        <view class="sensor-header">
+          <text class="sensor-label">{{deviceNames.sensor1}}</text>
+          <view class="sensor-icon temperature">🌡</view>
+        </view>
+        <view class="sensor-values">
+          <view class="value-item temp">
+            <text class="value-label">温度</text>
+            <text class="value-number">{{deviceData.air_temperature_1 !== null ? deviceData.air_temperature_1 : '--'}}°C</text>
+            <view class="value-bar">
+              <view class="bar-fill" style="width: {{deviceData.air_temperature_1 !== null ? Math.min(Math.max((deviceData.air_temperature_1 + 10) / 50 * 100, 0), 100) : 0}}%"></view>
+            </view>
+          </view>
+          <view class="value-item humidity">
+            <text class="value-label">湿度</text>
+            <text class="value-number">{{deviceData.air_humidity_1 !== null ? deviceData.air_humidity_1 : '--'}}%</text>
+            <view class="value-bar">
+              <view class="bar-fill blue" style="width: {{deviceData.air_humidity_1 !== null ? Math.min(Math.max(deviceData.air_humidity_1, 0), 100) : 0}}%"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 传感器4 -->
+      <view class="sensor-group">
+        <view class="sensor-header">
+          <text class="sensor-label">{{deviceNames.sensor4}}</text>
+          <view class="sensor-icon temperature">🌡</view>
+        </view>
+        <view class="sensor-values">
+          <view class="value-item temp">
+            <text class="value-label">温度</text>
+            <text class="value-number">{{deviceData.air_temperature_4 !== null ? deviceData.air_temperature_4 : '--'}}°C</text>
+            <view class="value-bar">
+              <view class="bar-fill" style="width: {{deviceData.air_temperature_4 !== null ? Math.min(Math.max((deviceData.air_temperature_4 + 10) / 50 * 100, 0), 100) : 0}}%"></view>
+            </view>
+          </view>
+          <view class="value-item humidity">
+            <text class="value-label">湿度</text>
+            <text class="value-number">{{deviceData.air_humidity_4 !== null ? deviceData.air_humidity_4 : '--'}}%</text>
+            <view class="value-bar">
+              <view class="bar-fill blue" style="width: {{deviceData.air_humidity_4 !== null ? Math.min(Math.max(deviceData.air_humidity_4, 0), 100) : 0}}%"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 更新时间 -->
+      <view class="update-time">
+        <text class="time-label">最后更新: </text>
+        <text class="time-value">{{lastUpdateTime || '未接收数据'}}</text>
+        <text wx:if="{{dataTimeout}}" class="timeout-warning"> (数据超时)</text>
+      </view>
+    </view>
+
+    <!-- 继电器控制卡片 -->
+    <view class="relay-card">
+      <view class="card-header">
+        <text class="card-title">继电器控制</text>
+        <view class="card-decoration"></view>
+      </view>
+
+      <!-- 主继电器 -->
+      <view class="relay-control {{isRelayChanging ? 'changing' : ''}}">
+        <view class="relay-info">
+          <text class="relay-name">{{deviceNames.relay}}</text>
+          <text class="relay-status {{deviceData.relay_status}}">{{deviceData.relay_status === 'on' ? '已开启' : '已关闭'}}</text>
+          <text wx:if="{{isRelayChanging}}" class="changing-hint">同步中...</text>
+        </view>
+        <view class="relay-switch {{deviceData.relay_status}} {{isRelayChanging ? 'disabled' : ''}}" bindtap="toggleRelay">
+          <view class="switch-track">
+            <view class="switch-knob"></view>
+          </view>
+          <view class="switch-glow"></view>
+        </view>
+      </view>
+
+      <!-- 内部继电器 -->
+      <view class="relay-control">
+        <view class="relay-info">
+          <text class="relay-name">{{deviceNames.relayIn}}</text>
+          <text class="relay-status {{deviceData.relay_in_status}}">{{deviceData.relay_in_status === 'on' ? '已开启' : '已关闭'}}</text>
+        </view>
+        <view class="relay-switch {{deviceData.relay_in_status}}" bindtap="toggleRelayIn">
+          <view class="switch-track">
+            <view class="switch-knob"></view>
+          </view>
+          <view class="switch-glow"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 订阅状态 -->
+    <view class="status-card">
+      <view class="status-row">
+        <text class="status-row-label">订阅主题</text>
+        <text class="status-row-value">{{subscribeTopic}}</text>
+      </view>
+      <view class="status-row">
+        <text class="status-row-label">订阅状态</text>
+        <text class="status-row-value {{isSubscribed ? 'active' : 'inactive'}}">{{isSubscribed ? '已订阅' : '未订阅'}}</text>
+      </view>
+    </view>
+
+    <!-- 底部留白 -->
+    <view class="bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- 主题配置对话框 -->
+  <view class="dialog-mask" wx:if="{{showTopicConfig}}" bindtap="hideTopicConfigDialog">
+    <view class="dialog-content" catchtap="stopPropagation">
+      <view class="dialog-header">
+        <text class="dialog-title">主题配置</text>
+        <view class="dialog-close" bindtap="hideTopicConfigDialog">×</view>
+      </view>
+      <view class="dialog-body">
+        <view class="config-item">
+          <text class="config-label">订阅主题 (接收数据)</text>
+          <input class="config-input" value="{{subscribeInput}}" bindinput="onSubscribeTopicInput" placeholder="输入订阅主题" />
+        </view>
+        <view class="config-item">
+          <text class="config-label">发布主题 (控制主继电器)</text>
+          <input class="config-input" value="{{publishRelayInput}}" bindinput="onPublishRelayTopicInput" placeholder="输入发布主题" />
+        </view>
+        <view class="config-item">
+          <text class="config-label">发布主题 (控制内部继电器)</text>
+          <input class="config-input" value="{{publishRelayInInput}}" bindinput="onPublishRelayInTopicInput" placeholder="输入发布主题" />
+        </view>
+      </view>
+      <view class="dialog-footer">
+        <button class="dialog-btn secondary" bindtap="hideTopicConfigDialog">取消</button>
+        <button class="dialog-btn primary" bindtap="saveTopicSettings">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 名称配置对话框 -->
+  <view class="dialog-mask" wx:if="{{showNameConfig}}" bindtap="hideNameConfigDialog">
+    <view class="dialog-content" catchtap="stopPropagation">
+      <view class="dialog-header">
+        <text class="dialog-title">设备名称</text>
+        <view class="dialog-close" bindtap="hideNameConfigDialog">×</view>
+      </view>
+      <view class="dialog-body">
+        <view class="config-item">
+          <text class="config-label">传感器 1 名称</text>
+          <input class="config-input" value="{{nameSensor1Input}}" bindinput="onNameSensor1Input" placeholder="输入传感器 1 名称" />
+        </view>
+        <view class="config-item">
+          <text class="config-label">传感器 4 名称</text>
+          <input class="config-input" value="{{nameSensor4Input}}" bindinput="onNameSensor4Input" placeholder="输入传感器 4 名称" />
+        </view>
+        <view class="config-item">
+          <text class="config-label">主继电器名称</text>
+          <input class="config-input" value="{{nameRelayInput}}" bindinput="onNameRelayInput" placeholder="输入主继电器名称" />
+        </view>
+        <view class="config-item">
+          <text class="config-label">内部继电器名称</text>
+          <input class="config-input" value="{{nameRelayInInput}}" bindinput="onNameRelayInInput" placeholder="输入内部继电器名称" />
+        </view>
+      </view>
+      <view class="dialog-footer">
+        <button class="dialog-btn secondary" bindtap="hideNameConfigDialog">取消</button>
+        <button class="dialog-btn primary" bindtap="saveNameSettings">保存</button>
+      </view>
+    </view>
+  </view>
+</view>
