@@ -1,0 +1,423 @@
+<!-- 科技风格布局 -->
+<view class="tech-container">
+  <!-- 顶部导航栏 -->
+  <view class="tech-navbar">
+    <view class="navbar-logo">
+      <view class="logo-icon">
+        <text class="logo-text">MQTT</text>
+      </view>
+      <view class="logo-line"></view>
+      <text class="logo-subtitle">控制中心</text>
+    </view>
+    <view class="status-indicator {{connectionStatus}}">
+      <view class="status-ring">
+        <view class="status-pulse"></view>
+      </view>
+      <text class="status-label">{{connectionText}}</text>
+    </view>
+  </view>
+
+  <!-- 主内容区域 -->
+  <scroll-view class="tech-content" scroll-y="true">
+    <!-- 首页 -->
+    <view wx:if="{{activeTab === 'home'}}">
+      <!-- 科技感状态卡片 -->
+      <view class="tech-status-card">
+        <!-- 背景装饰 -->
+        <view class="tech-bg-grid">
+          <view class="grid-line"></view>
+          <view class="grid-line"></view>
+          <view class="grid-line"></view>
+        </view>
+        <view class="tech-circle"></view>
+
+        <!-- 核心状态展示 -->
+        <view class="status-center">
+          <view class="status-hexagon {{connectionStatus}}">
+            <view class="hexagon-inner">
+              <image
+                src="{{isConnected ? '/assets/icons/connect.svg' : '/assets/icons/wifi.svg'}}"
+                class="status-icon-img"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="hexagon-glow"></view>
+          </view>
+          <text class="status-text-main">{{isConnected ? '系统在线' : '离线状态'}}</text>
+          <text class="status-tech-info">{{debugInfo || '等待连接指令'}}</text>
+        </view>
+
+        <!-- 科技感连接按钮 -->
+        <view class="connect-control">
+          <button class="tech-button {{connectionStatus}}" bindtap="{{isConnected ? 'disconnect' : 'connect'}}">
+            <view class="button-glow"></view>
+            <view class="button-content">
+              <text class="button-icon">{{isConnected ? '⚡' : '🔌'}}</text>
+              <text class="button-text">{{isConnected ? '断开连接' : '建立连接'}}</text>
+            </view>
+          </button>
+        </view>
+
+        <!-- 底部数据条 -->
+        <view class="status-data-bar">
+          <view class="data-item">
+            <text class="data-value">{{subscribedTopics.length}}</text>
+            <text class="data-label">订阅主题</text>
+          </view>
+          <view class="data-divider"></view>
+          <view class="data-item">
+            <text class="data-value">{{messages.length}}</text>
+            <text class="data-label">消息总数</text>
+          </view>
+          <view class="data-divider"></view>
+          <view class="data-item">
+            <text class="data-value">{{isConnected ? '1' : '0'}}</text>
+            <text class="data-label">连接状态</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 科技感功能网格 -->
+      <view class="tech-feature-section">
+        <view class="section-header">
+          <text class="section-title-tech">快捷操作</text>
+          <view class="section-decoration"></view>
+        </view>
+        <view class="tech-feature-grid">
+          <view class="tech-feature-card {{isConnected ? '' : 'disabled'}}" bindtap="{{isConnected ? 'showTestDialog' : 'showConnectFirst'}}">
+            <view class="tech-card-bg"></view>
+            <view class="tech-icon-box test">
+              <image src="/assets/icons/test.svg" class="feature-icon-img" mode="aspectFit" />
+              <view class="icon-glow"></view>
+            </view>
+            <text class="tech-card-label">发送测试</text>
+            <view class="tech-corner tl"></view>
+            <view class="tech-corner tr"></view>
+            <view class="tech-corner bl"></view>
+            <view class="tech-corner br"></view>
+          </view>
+          <view class="tech-feature-card" bindtap="clearMessages">
+            <view class="tech-card-bg"></view>
+            <view class="tech-icon-box clear">
+              <image src="/assets/icons/clear.svg" class="feature-icon-img" mode="aspectFit" />
+              <view class="icon-glow"></view>
+            </view>
+            <text class="tech-card-label">清空记录</text>
+            <view class="tech-corner tl"></view>
+            <view class="tech-corner tr"></view>
+            <view class="tech-corner bl"></view>
+            <view class="tech-corner br"></view>
+          </view>
+          <view class="tech-feature-card" bindtap="switchTab" data-tab="messages">
+            <view class="tech-card-bg"></view>
+            <view class="tech-icon-box message">
+              <image src="/assets/icons/message.svg" class="feature-icon-img" mode="aspectFit" />
+              <view class="icon-glow"></view>
+            </view>
+            <text class="tech-card-label">消息列表</text>
+            <view class="tech-corner tl"></view>
+            <view class="tech-corner tr"></view>
+            <view class="tech-corner bl"></view>
+            <view class="tech-corner br"></view>
+          </view>
+          <view class="tech-feature-card" bindtap="switchTab" data-tab="settings">
+            <view class="tech-card-bg"></view>
+            <view class="tech-icon-box settings">
+              <image src="/assets/icons/settings.svg" class="feature-icon-img" mode="aspectFit" />
+              <view class="icon-glow"></view>
+            </view>
+            <text class="tech-card-label">系统设置</text>
+            <view class="tech-corner tl"></view>
+            <view class="tech-corner tr"></view>
+            <view class="tech-corner bl"></view>
+            <view class="tech-corner br"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 科技感订阅区域 -->
+      <view class="tech-card">
+        <view class="tech-card-header">
+          <text class="tech-card-title">主题订阅</text>
+          <view class="tech-badge">{{subscribedTopics.length}}</view>
+        </view>
+        <view class="tech-input-wrapper">
+          <view class="tech-input-bg"></view>
+          <input class="tech-input" placeholder="输入订阅主题..." value="{{newTopic}}" bindinput="onTopicInput" disabled="{{!isConnected}}" />
+          <button class="tech-action-btn" bindtap="subscribeTopic" disabled="{{!isConnected}}">
+            <image src="/assets/icons/subscribe.svg" class="action-icon-img" mode="aspectFit" />
+          </button>
+        </view>
+        <view class="tech-tag-container">
+          <view wx:for="{{subscribedTopics}}" wx:key="*this" class="tech-tag">
+            <text class="tech-tag-text">{{item}}</text>
+            <view class="tech-tag-close" bindtap="unsubscribeTopic" data-topic="{{item}}">×</view>
+            <view class="tech-tag-line"></view>
+          </view>
+          <view wx:if="{{subscribedTopics.length === 0}}" class="tech-empty">
+            <text class="empty-icon">⚪</text>
+            <text class="empty-text">暂无订阅主题</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 科技感发布区域 -->
+      <view class="tech-card">
+        <view class="tech-card-header">
+          <text class="tech-card-title">消息发布</text>
+          <view class="tech-deco-line"></view>
+        </view>
+        <view class="tech-input-group">
+          <view class="tech-input-bg"></view>
+          <input class="tech-input" placeholder="目标主题" value="{{publishTopic}}" bindinput="onPublishTopicInput" disabled="{{!isConnected}}" />
+        </view>
+        <view class="tech-input-group" style="margin-top: 12px;">
+          <view class="tech-input-bg"></view>
+          <textarea class="tech-textarea" placeholder="消息内容..." value="{{publishMessage}}" bindinput="onPublishMessageInput" disabled="{{!isConnected}}" />
+        </view>
+        <button class="tech-submit-btn" bindtap="publishMessage" disabled="{{!isConnected}}">
+          <view class="btn-gradient"></view>
+          <image src="/assets/icons/publish.svg" class="submit-icon-img" mode="aspectFit" />
+          <text class="btn-label">发送消息</text>
+          <view class="btn-particles"></view>
+        </button>
+      </view>
+
+      <!-- 科技感最近消息 -->
+      <view class="tech-card">
+        <view class="tech-card-header">
+          <text class="tech-card-title">消息历史</text>
+          <view class="tech-link" bindtap="switchTab" data-tab="messages">
+            <text>查看全部</text>
+            <text class="arrow">→</text>
+          </view>
+        </view>
+        <view class="tech-message-list">
+          <view wx:for="{{messages.slice(0, 4)}}" wx:key="index" class="tech-message-item {{item.direction || 'received'}}">
+            <view class="tech-msg-dot {{item.direction || 'received'}}">
+              <view class="dot-inner"></view>
+            </view>
+            <view class="tech-msg-content">
+              <view class="tech-msg-topic">{{item.topic}}</view>
+              <view class="tech-msg-payload">{{item.payload.length > 50 ? item.payload.substring(0, 50) + '...' : item.payload}}</view>
+            </view>
+            <text class="tech-msg-time">{{item.timestamp}}</text>
+            <view class="tech-msg-line"></view>
+          </view>
+          <view wx:if="{{messages.length === 0}}" class="tech-empty">
+            <text class="empty-icon">📭</text>
+            <text class="empty-text">暂无消息记录</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 消息页面 -->
+    <view wx:if="{{activeTab === 'messages'}}">
+      <view class="tech-card">
+        <view class="tech-filter-bar">
+          <view class="tech-filter-tabs">
+            <view class="tech-filter-tab {{messageType === 'all' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="all">
+              <text class="tab-text">全部</text>
+              <view class="tab-underline"></view>
+            </view>
+            <view class="tech-filter-tab {{messageType === 'received' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="received">
+              <text class="tab-text">接收</text>
+              <view class="tab-underline"></view>
+            </view>
+            <view class="tech-filter-tab {{messageType === 'sent' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="sent">
+              <text class="tab-text">发送</text>
+              <view class="tab-underline"></view>
+            </view>
+          </view>
+          <view class="tech-search-box">
+            <image src="/assets/icons/search.svg" class="search-icon-img" mode="aspectFit" />
+            <input class="tech-search-input" placeholder="搜索消息..." value="{{filterKeyword}}" bindinput="onFilterKeywordInput" />
+          </view>
+        </view>
+      </view>
+
+      <view class="tech-card">
+        <view class="tech-list-header">
+          <text class="list-count">{{filteredMessages.length}} 条消息</text>
+          <view class="list-divider"></view>
+        </view>
+        <view class="tech-full-list">
+          <view wx:for="{{filteredMessages}}" wx:key="index" class="tech-full-item {{item.direction || 'received'}}">
+            <view class="item-header">
+              <view class="type-badge {{item.direction || 'received'}}">
+                <text>{{item.direction === 'sent' ? '↑ 发送' : '↓ 接收'}}</text>
+              </view>
+              <text class="item-time">{{item.timestamp}}</text>
+            </view>
+            <view class="item-body">
+              <text class="item-topic">{{item.topic}}</text>
+              <text class="item-payload">{{item.payload}}</text>
+            </view>
+            <view class="item-decoration"></view>
+          </view>
+          <view wx:if="{{filteredMessages.length === 0}}" class="tech-empty">
+            <text class="empty-icon">🔍</text>
+            <text class="empty-text">没有找到匹配的消息</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="tech-card">
+        <view class="tech-export-grid">
+          <button class="tech-export-btn" bindtap="exportMessagesAsJson">
+            <view class="export-icon">📄</view>
+            <text class="export-label">导出 JSON</text>
+          </button>
+          <button class="tech-export-btn" bindtap="exportMessagesAsCsv">
+            <view class="export-icon">📊</view>
+            <text class="export-label">导出 CSV</text>
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 设置页面 -->
+    <view wx:if="{{activeTab === 'settings'}}">
+      <view class="tech-card">
+        <view class="tech-card-header">
+          <text class="tech-card-title">服务器配置</text>
+          <view class="tech-deco-line"></view>
+        </view>
+        <view class="tech-form-list">
+          <view class="tech-form-item">
+            <text class="tech-form-label">服务器地址</text>
+            <view class="tech-input-bg"></view>
+            <input class="tech-input" value="{{serverConfig.broker}}" bindinput="onBrokerInput" />
+          </view>
+          <view class="tech-form-item">
+            <text class="tech-form-label">端口</text>
+            <view class="tech-input-bg"></view>
+            <input class="tech-input" type="number" value="{{serverConfig.port}}" bindinput="onPortInput" />
+          </view>
+          <view class="tech-form-item">
+            <text class="tech-form-label">协议</text>
+            <picker mode="selector" range="{{['wss', 'ws']}}" value="{{serverConfig.protocol === 'wss' ? 0 : 1}}" bindchange="onProtocolChange">
+              <view class="tech-picker">{{serverConfig.protocol}}</view>
+            </picker>
+          </view>
+          <view class="tech-form-item">
+            <text class="tech-form-label">客户端ID</text>
+            <view class="tech-input-bg"></view>
+            <input class="tech-input" value="{{serverConfig.clientId}}" bindinput="onClientIdInput" />
+          </view>
+          <view class="tech-form-item">
+            <text class="tech-form-label">用户名</text>
+            <view class="tech-input-bg"></view>
+            <input class="tech-input" value="{{serverConfig.username}}" bindinput="onUsernameInput" />
+          </view>
+          <view class="tech-form-item">
+            <text class="tech-form-label">密码</text>
+            <view class="tech-input-bg"></view>
+            <input class="tech-input" password="{{!showPassword}}" value="{{serverConfig.password}}" bindinput="onPasswordInput" />
+          </view>
+        </view>
+        <view class="tech-action-row">
+          <button class="tech-btn-secondary" bindtap="resetToDefault">
+            <text class="btn-icon">↺</text>
+            <text>重置</text>
+          </button>
+          <button class="tech-btn-primary" bindtap="saveServerConfig">
+            <text class="btn-icon">💾</text>
+            <text>保存配置</text>
+          </button>
+        </view>
+      </view>
+
+      <view class="tech-card">
+        <view class="tech-card-header">
+          <text class="tech-card-title">数据统计</text>
+          <view class="tech-deco-line"></view>
+        </view>
+        <view class="tech-stats-grid">
+          <view class="tech-stat-box">
+            <view class="stat-icon receive">
+              <text>↓</text>
+            </view>
+            <text class="stat-number">{{receivedMessageCount}}</text>
+            <text class="stat-tag">接收消息</text>
+            <view class="stat-glow"></view>
+          </view>
+          <view class="tech-stat-box">
+            <view class="stat-icon send">
+              <text>↑</text>
+            </view>
+            <text class="stat-number">{{sentMessageCount}}</text>
+            <text class="stat-tag">发送消息</text>
+            <view class="stat-glow"></view>
+          </view>
+          <view class="tech-stat-box">
+            <view class="stat-icon topic">
+              <text>#</text>
+            </view>
+            <text class="stat-number">{{subscribedTopics.length}}</text>
+            <text class="stat-tag">订阅主题</text>
+            <view class="stat-glow"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部留白 -->
+    <view class="tech-bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- 科技感底部导航 -->
+  <view class="tech-bottom-nav">
+    <view class="nav-bg"></view>
+    <view class="tech-nav-item {{activeTab === 'home' ? 'active' : ''}}" bindtap="switchTab" data-tab="home">
+      <view class="nav-icon-container">
+        <image src="/assets/icons/home.svg" class="nav-icon-img" mode="aspectFit" />
+        <view class="nav-icon-glow"></view>
+      </view>
+      <text class="nav-label">首页</text>
+    </view>
+    <view class="tech-nav-item {{activeTab === 'messages' ? 'active' : ''}}" bindtap="switchTab" data-tab="messages">
+      <view class="nav-icon-container">
+        <image src="/assets/icons/message.svg" class="nav-icon-img" mode="aspectFit" />
+        <view class="nav-icon-glow"></view>
+        <view class="nav-badge" wx:if="{{messages.length > 0}}">{{messages.length > 99 ? '99+' : messages.length}}</view>
+      </view>
+      <text class="nav-label">消息</text>
+    </view>
+    <view class="tech-nav-item {{activeTab === 'settings' ? 'active' : ''}}" bindtap="switchTab" data-tab="settings">
+      <view class="nav-icon-container">
+        <image src="/assets/icons/settings.svg" class="nav-icon-img" mode="aspectFit" />
+        <view class="nav-icon-glow"></view>
+      </view>
+      <text class="nav-label">设置</text>
+    </view>
+  </view>
+
+  <!-- 科技感测试对话框 -->
+  <view class="tech-dialog-mask" wx:if="{{showTestDialog}}" bindtap="hideTestDialog">
+    <view class="tech-dialog" catchtap="stopPropagation">
+      <view class="dialog-header-tech">
+        <text class="dialog-title">测试消息发送</text>
+        <view class="dialog-close-tech" bindtap="hideTestDialog">×</view>
+      </view>
+      <view class="dialog-body-tech">
+        <view class="tech-test-option" bindtap="sendQuickTest">
+          <view class="test-option-glow green"></view>
+          <view class="test-option-icon green">⚡</view>
+          <text class="test-option-label">快速测试</text>
+        </view>
+        <view class="tech-test-option" bindtap="sendJsonTest">
+          <view class="test-option-glow blue"></view>
+          <view class="test-option-icon blue">📦</view>
+          <text class="test-option-label">JSON 测试</text>
+        </view>
+        <view class="tech-test-option" bindtap="sendCustomTest">
+          <view class="test-option-glow orange"></view>
+          <view class="test-option-icon orange">✎</view>
+          <text class="test-option-label">自定义</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
