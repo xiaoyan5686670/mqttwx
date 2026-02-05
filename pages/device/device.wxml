@@ -69,14 +69,14 @@
                 <text class="value-label">温度</text>
                 <text class="value-number">{{deviceData[item.tempField] !== null ? deviceData[item.tempField] : '--'}}{{item.unit}}</text>
                 <view class="value-bar">
-                  <view class="bar-fill {{item.type === 'env' ? '' : 'blue'}}" style="width: 0%;"></view>
+                  <view class="bar-fill {{item.type === 'env' ? '' : 'blue'}}" style="width: {{tempBarWidthList[index]}};"></view>
                 </view>
               </view>
               <view class="value-item humidity" wx:if="{{item.type === 'env'}}">
                 <text class="value-label">湿度</text>
                 <text class="value-number">{{deviceData[item.humidityField] !== null ? deviceData[item.humidityField] : '--'}}%</text>
                 <view class="value-bar">
-                  <view class="bar-fill blue" style="width: 0%;"></view>
+                  <view class="bar-fill blue" style="width: {{humidityBarWidthList[index]}};"></view>
                 </view>
               </view>
             </view>

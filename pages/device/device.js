@@ -91,6 +91,9 @@ Page({
     if (mqttClient.connected && this.data.subscribeTopic) {
       this.subscribeToDeviceTopic();
     }
+
+    // 计算初始进度条宽度
+    this.calcBarWidths();
   },
 
   onShow() {
@@ -158,14 +161,8 @@ Page({
         this.setData({
           deviceList: [],
           currentDeviceId: null,
-          currentDeviceName: '',
-          subscribeTopic: defaultDevice.subscribeTopic,
-          publishRelayTopic: defaultDevice.publishRelayTopic,
-          publishRelayInTopic: defaultDevice.publishRelayInTopic
+          currentDeviceName: ''
         });
-        this.saveDeviceList();
-        wx.setStorageSync('currentDeviceId', defaultDevice.id);
-        console.log('Created default device:', defaultDevice.id);
       }
     } catch (e) {
       console.error('Failed to load device list:', e);
@@ -342,6 +339,9 @@ Page({
           lastUpdateTime: new Date().toLocaleTimeString(),
           dataTimeout: false
         });
+
+        // 计算进度条宽度
+        this.calcBarWidths();
 
         // 重置超时检测
         clearTimeout(this.dataTimeoutTimer);
@@ -928,5 +928,41 @@ Page({
   onUnload() {
     clearTimeout(this.dataTimeoutTimer);
     clearTimeout(this.data.relayDebounceTimer);
+  },
+
+  calcBarWidths() {
+    const { sensorConfig, deviceData } = this.data;
+    const tempBarWidthList = [];
+    const humidityBarWidthList = [];
+
+    sensorConfig.forEach((item, index) => {
+      // 温度条宽度计算
+      if (item.tempField && deviceData[item.tempField] != null) {
+        let percent;
+        if (item.unit === '°C') {
+          percent = (deviceData[item.tempField] + 10) / 50 * 100;
+        } else {
+          percent = (deviceData[item.tempField] - (-32)) / 100 * 100;
+        }
+        percent = Math.min(Math.max(percent, 0), 100);
+        tempBarWidthList[index] = `${percent.toFixed(1)}%`;
+      } else {
+        tempBarWidthList[index] = '0%';
+      }
+
+      // 湿度条宽度计算（仅限 env 类型）
+      if (item.type === 'env' && item.humidityField && deviceData[item.humidityField] != null) {
+        let percent = deviceData[item.humidityField];
+        percent = Math.min(Math.max(percent, 0), 100);
+        humidityBarWidthList[index] = `${percent.toFixed(1)}%`;
+      } else {
+        humidityBarWidthList[index] = '0%';
+      }
+    });
+
+    this.setData({
+      tempBarWidthList,
+      humidityBarWidthList
+    });
   }
 });
