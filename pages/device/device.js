@@ -143,8 +143,10 @@ Page({
         this.setData({ deviceList: list });
         // 加载当前设备
         const currentId = wx.getStorageSync('currentDeviceId');
+        console.log('Loaded currentDeviceId from storage:', currentId, 'type:', typeof currentId);
         if (currentId) {
-          this.switchToDevice(currentId);
+          // 确保转换为字符串进行比较
+          this.switchToDevice(String(currentId));
         } else if (list.length > 0) {
           this.switchToDevice(list[0].id);
         }
@@ -168,6 +170,7 @@ Page({
         });
         this.saveDeviceList();
         wx.setStorageSync('currentDeviceId', defaultDevice.id);
+        console.log('Created default device:', defaultDevice.id);
       }
     } catch (e) {
       console.error('Failed to load device list:', e);
@@ -186,7 +189,17 @@ Page({
     try {
       const config = wx.getStorageSync('sensorConfig');
       if (config) {
-        this.setData({ sensorConfig: config });
+        // 验证 config 是否为有效数据
+        if (typeof config === 'string') {
+          try {
+            this.setData({ sensorConfig: JSON.parse(config) });
+          } catch (parseError) {
+            console.warn('Failed to parse stored sensorConfig, using default:', parseError);
+            this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
+          }
+        } else {
+          this.setData({ sensorConfig: config });
+        }
       } else {
         // 首次加载，使用默认配置
         this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
@@ -529,34 +542,79 @@ Page({
     this.switchToDevice(newDevice.id);
   },
 
-  deleteDevice(e) {
-    console.log('Delete device event:', e);
-    const deviceId = e.currentTarget.dataset.id;
-    console.log('Delete device ID:', deviceId);
+  deleteDevice(event) {
+    console.log('=== deleteDevice called ===');
+    console.log('Full event object:', JSON.stringify(event));
+    
+    // 从事件对象中获取 data-id - 尝试多种方式
+    let deviceId = null;
+    
+    // 方式1: 从 currentTarget.dataset.id 获取
+    if (event.currentTarget && event.currentTarget.dataset) {
+      deviceId = event.currentTarget.dataset.id;
+      console.log('Method 1 - currentTarget.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 方式2: 从 target.dataset.id 获取
+    if ((!deviceId || deviceId === '[object Object]') && event.target && event.target.dataset) {
+      deviceId = event.target.dataset.id;
+      console.log('Method 2 - target.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 方式3: 直接从 dataset 获取
+    if ((!deviceId || deviceId === '[object Object]') && event.dataset) {
+      deviceId = event.dataset.id;
+      console.log('Method 3 - event.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 如果 deviceId 是对象，检查它的属性
+    if (typeof deviceId === 'object' && deviceId !== null) {
+      console.log('deviceId is object with keys:', Object.keys(deviceId));
+      if (deviceId.id !== undefined) {
+        deviceId = deviceId.id;
+        console.log('Extracted deviceId.id:', deviceId);
+      } else if (deviceId.value !== undefined) {
+        deviceId = deviceId.value;
+        console.log('Extracted deviceId.value:', deviceId);
+      } else {
+        console.log('ERROR: Cannot extract id from object');
+        return;
+      }
+    }
+    
+    // 参数验证
+    if (deviceId === null || deviceId === undefined || deviceId === '') {
+      console.log('ERROR: deviceId is invalid:', deviceId);
+      return;
+    }
 
     if (this.data.deviceList.length <= 1) {
       wx.showToast({ title: '至少保留一个设备', icon: 'none' });
       return;
     }
 
+    const deleteId = String(deviceId);
+    console.log('Final deleteId:', deleteId);
+    
+    const that = this;
     wx.showModal({
       title: '确认删除',
       content: '确定要删除该设备吗？',
-      success: (res) => {
+      success: function(res) {
         if (res.confirm) {
-          const deviceList = this.data.deviceList;
+          const deviceList = that.data.deviceList;
           const newList = [];
           for (let i = 0; i < deviceList.length; i++) {
-            if (deviceList[i].id !== deviceId) {
+            if (String(deviceList[i].id) !== deleteId) {
               newList.push(deviceList[i]);
             }
           }
-          this.setData({ deviceList: newList });
-          this.saveDeviceList();
+          that.setData({ deviceList: newList });
+          that.saveDeviceList();
 
           // 如果删除的是当前设备，切换到第一个设备
-          if (deviceId === this.data.currentDeviceId && newList.length > 0) {
-            this.switchToDevice(newList[0].id);
+          if (String(that.data.currentDeviceId) === deleteId && newList.length > 0) {
+            that.switchToDevice(newList[0].id);
           }
           wx.showToast({ title: '设备已删除', icon: 'success' });
         }
@@ -564,57 +622,128 @@ Page({
     });
   },
 
-  switchToDevice(deviceId) {
-    let device = null;
-    const deviceList = this.data.deviceList;
-    for (let i = 0; i < deviceList.length; i++) {
-      if (deviceList[i].id === deviceId) {
-        device = deviceList[i];
-        break;
+  switchToDevice(event) {
+    console.log('=== switchToDevice called ===');
+    console.log('Full event object:', JSON.stringify(event));
+    
+    // 从事件对象中获取 data-id - 尝试多种方式
+    let deviceId = null;
+    
+    // 方式1: 从 currentTarget.dataset.id 获取
+    if (event.currentTarget && event.currentTarget.dataset) {
+      deviceId = event.currentTarget.dataset.id;
+      console.log('Method 1 - currentTarget.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 方式2: 从 target.dataset.id 获取
+    if ((!deviceId || deviceId === '[object Object]') && event.target && event.target.dataset) {
+      deviceId = event.target.dataset.id;
+      console.log('Method 2 - target.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 方式3: 直接从 dataset 获取（某些情况下 dataset 直接在 event 上）
+    if ((!deviceId || deviceId === '[object Object]') && event.dataset) {
+      deviceId = event.dataset.id;
+      console.log('Method 3 - event.dataset.id:', deviceId, 'type:', typeof deviceId);
+    }
+    
+    // 如果 deviceId 是对象，检查它的属性
+    if (typeof deviceId === 'object' && deviceId !== null) {
+      console.log('deviceId is object with keys:', Object.keys(deviceId));
+      // 尝试提取可能的 id 值
+      if (deviceId.id !== undefined) {
+        deviceId = deviceId.id;
+        console.log('Extracted deviceId.id:', deviceId);
+      } else if (deviceId.value !== undefined) {
+        deviceId = deviceId.value;
+        console.log('Extracted deviceId.value:', deviceId);
+      } else {
+        console.log('ERROR: Cannot extract id from object');
+        return;
       }
     }
-    if (!device) return;
-
-    console.log('Switching to device:', device);
-
-    // 取消旧订阅
-    if (this.data.isSubscribed && this.data.subscribeTopic !== device.subscribeTopic) {
-      mqttClient.unsubscribe(this.data.subscribeTopic);
+    
+    // 参数验证
+    if (deviceId === null || deviceId === undefined || deviceId === '') {
+      console.log('ERROR: deviceId is invalid:', deviceId);
+      return;
     }
+    
+    const searchId = String(deviceId);
+    console.log('Final searchId:', searchId);
+    
+    // 使用 setTimeout 确保在下一个事件循环中执行，避免数据竞争
+    const that = this;
+    setTimeout(function() {
+      const deviceList = that.data.deviceList;
+      
+      if (!deviceList || deviceList.length === 0) {
+        console.log('ERROR: deviceList is empty');
+        return;
+      }
+      
+      // 统一使用字符串比较
+      let device = null;
+      for (let i = 0; i < deviceList.length; i++) {
+        const listItemId = String(deviceList[i].id);
+        console.log('Comparing:', listItemId, 'with', searchId);
+        if (listItemId === searchId) {
+          device = deviceList[i];
+          console.log('Device found:', device);
+          break;
+        }
+      }
+      
+      if (!device) {
+        console.log('ERROR: Device not found:', searchId);
+        return;
+      }
 
-    const isConnected = this.data.isConnected;
+      console.log('Switching to device:', device);
 
-    this.setData({
-      currentDeviceId: device.id,
-      currentDeviceName: device.name,
-      subscribeTopic: device.subscribeTopic,
-      publishRelayTopic: device.publishRelayTopic,
-      publishRelayInTopic: device.publishRelayInTopic,
-      subscribeInput: device.subscribeTopic,
-      publishRelayInput: device.publishRelayTopic,
-      publishRelayInInput: device.publishRelayInTopic,
-      deviceData: {}, // 清空数据
-      relay_status: 'off',
-      relay_in_status: 'off',
-      lastUpdateTime: null,
-      isSubscribed: false,
-      showDeviceManage: false
-    });
+      // 取消旧订阅
+      if (that.data.isSubscribed && that.data.subscribeTopic !== device.subscribeTopic) {
+        try {
+          mqttClient.unsubscribe(that.data.subscribeTopic);
+        } catch (e) {
+          console.error('Failed to unsubscribe:', e);
+        }
+      }
 
-    wx.setStorageSync('currentDeviceId', device.id);
+      const isConnected = that.data.isConnected;
 
-    // 重新订阅
-    if (isConnected) {
-      this.subscribeToDeviceTopic();
-    }
+      that.setData({
+        currentDeviceId: device.id,
+        currentDeviceName: device.name,
+        subscribeTopic: device.subscribeTopic,
+        publishRelayTopic: device.publishRelayTopic,
+        publishRelayInTopic: device.publishRelayInTopic,
+        subscribeInput: device.subscribeTopic,
+        publishRelayInput: device.publishRelayTopic,
+        publishRelayInInput: device.publishRelayInTopic,
+        deviceData: {}, // 清空数据
+        relay_status: 'off',
+        relay_in_status: 'off',
+        lastUpdateTime: null,
+        isSubscribed: false,
+        showDeviceManage: false
+      });
 
-    // 加载该设备的配置
-    this.loadDeviceConfig(device.id);
+      wx.setStorageSync('currentDeviceId', device.id);
 
-    wx.showToast({
-      title: `已切换到${device.name}`,
-      icon: 'success'
-    });
+      // 重新订阅
+      if (isConnected) {
+        that.subscribeToDeviceTopic();
+      }
+
+      // 加载该设备的配置
+      that.loadDeviceConfig(device.id);
+
+      wx.showToast({
+        title: `已切换到${device.name}`,
+        icon: 'success'
+      });
+    }, 0);
   },
 
   loadDeviceConfig(deviceId) {
@@ -622,14 +751,34 @@ Page({
     try {
       const sensorConfig = wx.getStorageSync(`sensorConfig_${deviceId}`);
       if (sensorConfig) {
-        this.setData({ sensorConfig });
+        // 验证 sensorConfig 是否为有效数据
+        if (typeof sensorConfig === 'string') {
+          try {
+            this.setData({ sensorConfig: JSON.parse(sensorConfig) });
+          } catch (parseError) {
+            console.warn('Failed to parse stored sensorConfig, using default:', parseError);
+            this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
+          }
+        } else {
+          this.setData({ sensorConfig });
+        }
       } else {
         this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
       }
 
       const relayNames = wx.getStorageSync(`relayNames_${deviceId}`);
       if (relayNames) {
-        this.setData({ relayNames });
+        // 验证 relayNames 是否为有效数据
+        if (typeof relayNames === 'string') {
+          try {
+            this.setData({ relayNames: JSON.parse(relayNames) });
+          } catch (parseError) {
+            console.warn('Failed to parse stored relayNames, using default:', parseError);
+            this.setData({ relayNames: { main: '主继电器', internal: '内部继电器' } });
+          }
+        } else {
+          this.setData({ relayNames });
+        }
       } else {
         this.setData({
           relayNames: { main: '主继电器', internal: '内部继电器' }
@@ -637,6 +786,11 @@ Page({
       }
     } catch (e) {
       console.error('Failed to load device config:', e);
+      // 发生错误时使用默认值
+      this.setData({ 
+        sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)),
+        relayNames: { main: '主继电器', internal: '内部继电器' }
+      });
     }
   },
 

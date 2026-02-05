@@ -219,17 +219,17 @@
       <view class="dialog-body device-manage-body">
         <view class="device-manage-list">
           <block wx:for="{{deviceList}}" wx:key="id">
-            <view class="device-manage-item {{currentDeviceId === item.id ? 'active' : ''}}" bindtap="switchToDevice" data-id="{{item.id}}">
-              <view class="device-manage-info">
-                <text class="device-manage-name">{{item.name}}</text>
-                <text class="device-manage-topic">{{item.subscribeTopic}}</text>
-              </view>
-              <view class="device-manage-actions">
-                <view wx:if="{{currentDeviceId !== item.id}}" class="device-manage-switch-icon">→</view>
-                <view class="device-manage-active-icon" wx:if="{{currentDeviceId === item.id}}">✓</view>
-                <view class="device-manage-delete" bindtap="deleteDevice" catchtap="stopPropagation" data-id="{{item.id}}">🗑</view>
-              </view>
-            </view>
+        <view class="device-manage-item {{currentDeviceId === item.id ? 'active' : ''}}">
+          <view class="device-manage-info" bindtap="switchToDevice" data-id="{{item.id}}">
+            <text class="device-manage-name">{{item.name}}</text>
+            <text class="device-manage-topic">{{item.subscribeTopic}}</text>
+          </view>
+          <view class="device-manage-actions">
+            <view wx:if="{{currentDeviceId !== item.id}}" class="device-manage-switch-icon" bindtap="switchToDevice" data-id="{{item.id}}">→</view>
+            <view class="device-manage-active-icon" wx:if="{{currentDeviceId === item.id}}">✓</view>
+            <view class="device-manage-delete" bindtap="deleteDevice" catchtap="stopPropagation" data-id="{{item.id}}">🗑</view>
+          </view>
+        </view>
           </block>
         </view>
       </view>
