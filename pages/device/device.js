@@ -7,22 +7,27 @@ Page({
     isConnected: false,
     connectionText: '未连接',
 
-    // 设备数据
-    deviceData: {
-      air_temperature_1: null,
-      air_humidity_1: null,
-      air_temperature_4: null,
-      air_humidity_4: null,
-      relay_status: 'off',
-      relay_in_status: 'off'
-    },
+    // 设备列表
+    deviceList: [],
+    currentDeviceId: null,
 
-    // 自定义设备名称
-    deviceNames: {
-      sensor1: '传感器 1',
-      sensor4: '传感器 4',
-      relay: '主继电器',
-      relayIn: '内部继电器'
+    // 当前设备配置
+    currentDeviceName: '',
+
+    // 设备数据 - 动态存储所有传感器数据
+    deviceData: {},
+
+    // 继电器状态
+    relay_status: 'off',
+    relay_in_status: 'off',
+
+    // 传感器配置
+    sensorConfig: [],
+
+    // 继电器名称
+    relayNames: {
+      main: '主继电器',
+      internal: '内部继电器'
     },
 
     // 数据更新时间
@@ -38,27 +43,44 @@ Page({
     isSubscribed: false,
     showTopicConfig: false,
     showNameConfig: false,
+    showSensorManage: false,
+    showDeviceManage: false,
+    showAddDevice: false,
 
     // 主题配置输入
     subscribeInput: '',
     publishRelayInput: '',
     publishRelayInInput: '',
 
-    // 名称配置输入
-    nameSensor1Input: '',
-    nameSensor4Input: '',
+    // 继电器名称输入
     nameRelayInput: '',
     nameRelayInInput: '',
+
+    // 新增设备输入
+    newDeviceName: '',
+    newDeviceTopic: '',
 
     // 防抖和乐观更新状态
     isRelayChanging: false,
     relayDebounceTimer: null
   },
 
+  // 默认传感器配置（用于还原）
+  defaultSensorConfig: [
+    { id: 'air_temperature_1', label: '传感器1', type: 'env', tempField: 'air_temperature_1', humidityField: 'air_humidity_1', unit: '°C', visible: true },
+    { id: 'air_temperature_4', label: '传感器4', type: 'env', tempField: 'air_temperature_4', humidityField: 'air_humidity_4', unit: '°C', visible: true },
+    { id: 'comp1_in', label: '压缩机1进温', type: 'compressor', tempField: 'comp1_in_temperature_F', unit: '°F', visible: false },
+    { id: 'comp1_out', label: '压缩机1出温', type: 'compressor', tempField: 'comp1_out_temperature_F', unit: '°F', visible: false },
+    { id: 'comp2_in', label: '压缩机2进温', type: 'compressor', tempField: 'comp2_in_temperature_F', unit: '°F', visible: false },
+    { id: 'comp2_out', label: '压缩机2出温', type: 'compressor', tempField: 'comp2_out_temperature_F', unit: '°F', visible: false },
+  ],
+
   onLoad() {
     console.log('Device page loaded');
+    this.loadDeviceList();
+    this.loadSensorConfig();
+    this.loadRelayNames();
     this.loadTopicConfig();
-    this.loadNameConfig();
     this.setupMQTTCallbacks();
     this.updateConnectionStatus();
 
@@ -114,25 +136,79 @@ Page({
     }
   },
 
-  loadNameConfig() {
+  loadDeviceList() {
     try {
-      const config = wx.getStorageSync('deviceNameConfig');
+      const list = wx.getStorageSync('deviceList');
+      if (list && list.length > 0) {
+        this.setData({ deviceList: list });
+        // 加载当前设备
+        const currentId = wx.getStorageSync('currentDeviceId');
+        if (currentId) {
+          this.switchToDevice(currentId);
+        } else if (list.length > 0) {
+          this.switchToDevice(list[0].id);
+        }
+      } else {
+        // 首次使用，创建默认设备
+        const defaultDevice = {
+          id: Date.now().toString(),
+          name: '设备1',
+          subscribeTopic: 'device/sensor/data',
+          publishRelayTopic: 'pc/1',
+          publishRelayInTopic: 'device/relay_in/control',
+          createdAt: new Date().toISOString()
+        };
+        this.setData({
+          deviceList: [defaultDevice],
+          currentDeviceId: defaultDevice.id,
+          currentDeviceName: defaultDevice.name,
+          subscribeTopic: defaultDevice.subscribeTopic,
+          publishRelayTopic: defaultDevice.publishRelayTopic,
+          publishRelayInTopic: defaultDevice.publishRelayInTopic
+        });
+        this.saveDeviceList();
+        wx.setStorageSync('currentDeviceId', defaultDevice.id);
+      }
+    } catch (e) {
+      console.error('Failed to load device list:', e);
+    }
+  },
+
+  saveDeviceList() {
+    try {
+      wx.setStorageSync('deviceList', this.data.deviceList);
+    } catch (e) {
+      console.error('Failed to save device list:', e);
+    }
+  },
+
+  loadSensorConfig() {
+    try {
+      const config = wx.getStorageSync('sensorConfig');
+      if (config) {
+        this.setData({ sensorConfig: config });
+      } else {
+        // 首次加载，使用默认配置
+        this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
+      }
+    } catch (e) {
+      console.error('Failed to load sensor config:', e);
+      this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
+    }
+  },
+
+  loadRelayNames() {
+    try {
+      const config = wx.getStorageSync('relayNames');
       if (config) {
         this.setData({
-          deviceNames: {
-            sensor1: config.sensor1 || '传感器 1',
-            sensor4: config.sensor4 || '传感器 4',
-            relay: config.relay || '主继电器',
-            relayIn: config.relayIn || '内部继电器'
-          },
-          nameSensor1Input: config.sensor1 || '传感器 1',
-          nameSensor4Input: config.sensor4 || '传感器 4',
-          nameRelayInput: config.relay || '主继电器',
-          nameRelayInInput: config.relayIn || '内部继电器'
+          relayNames: config,
+          nameRelayInput: config.main || '主继电器',
+          nameRelayInInput: config.internal || '内部继电器'
         });
       }
     } catch (e) {
-      console.error('Failed to load name config:', e);
+      console.error('Failed to load relay names:', e);
     }
   },
 
@@ -157,26 +233,40 @@ Page({
     }
   },
 
-  saveNameConfig() {
-    const config = {
-      sensor1: this.data.deviceNames.sensor1,
-      sensor4: this.data.deviceNames.sensor4,
-      relay: this.data.deviceNames.relay,
-      relayIn: this.data.deviceNames.relayIn
-    };
+  saveSensorConfig() {
     try {
-      wx.setStorageSync('deviceNameConfig', config);
+      wx.setStorageSync(`sensorConfig_${this.data.currentDeviceId}`, this.data.sensorConfig);
       wx.showToast({
-        title: '名称已保存',
+        title: '配置已保存',
         icon: 'success'
       });
     } catch (e) {
-      console.error('Failed to save name config:', e);
+      console.error('Failed to save sensor config:', e);
       wx.showToast({
         title: '保存失败',
         icon: 'none'
       });
     }
+  },
+
+  saveRelayNames() {
+    try {
+      wx.setStorageSync(`relayNames_${this.data.currentDeviceId}`, this.data.relayNames);
+      wx.showToast({
+        title: '名称已保存',
+        icon: 'success'
+      });
+    } catch (e) {
+      console.error('Failed to save relay names:', e);
+      wx.showToast({
+        title: '保存失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  stopPropagation() {
+    // 阻止事件冒泡，防止点击对话框内容时关闭对话框
   },
 
   updateConnectionStatus() {
@@ -226,16 +316,21 @@ Page({
         // 兼容服务器错误拼写 realy_in_status
         const relayInStatus = data.relay_in_status || data.realy_in_status || 'off';
 
-        // 更新设备数据
+        // 更新所有传感器数据
+        const newDeviceData = {};
+        this.data.sensorConfig.forEach(sensor => {
+          if (sensor.type === 'env') {
+            newDeviceData[sensor.tempField] = this.formatNumber(data[sensor.tempField]);
+            newDeviceData[sensor.humidityField] = this.formatNumber(data[sensor.humidityField]);
+          } else {
+            newDeviceData[sensor.tempField] = this.formatNumber(data[sensor.tempField]);
+          }
+        });
+
         this.setData({
-          deviceData: {
-            air_temperature_1: this.formatNumber(data.air_temperature_1),
-            air_humidity_1: this.formatNumber(data.air_humidity_1),
-            air_temperature_4: this.formatNumber(data.air_temperature_4),
-            air_humidity_4: this.formatNumber(data.air_humidity_4),
-            relay_status: data.relay_status || 'off',
-            relay_in_status: relayInStatus
-          },
+          deviceData: newDeviceData,
+          relay_status: data.relay_status || 'off',
+          relay_in_status: relayInStatus,
           lastUpdateTime: new Date().toLocaleTimeString(),
           dataTimeout: false
         });
@@ -260,7 +355,7 @@ Page({
         const data = JSON.parse(message.payload);
         if (data.realy_in_status) {
           this.setData({
-            'deviceData.relay_in_status': data.realy_in_status,
+            relay_in_status: data.realy_in_status,
             lastUpdateTime: new Date().toLocaleTimeString()
           });
         }
@@ -296,12 +391,12 @@ Page({
       clearTimeout(this.data.relayDebounceTimer);
     }
 
-    const newStatus = this.data.deviceData.relay_status === 'on' ? 'off' : 'on';
+    const newStatus = this.data.relay_status === 'on' ? 'off' : 'on';
 
     // 乐观更新：立即更新 UI
     this.setData({
       isRelayChanging: true,
-      'deviceData.relay_status': newStatus
+      relay_status: newStatus
     });
 
     const payload = JSON.stringify({ relay: newStatus });
@@ -334,7 +429,7 @@ Page({
       // 发送失败，回滚 UI 状态
       this.setData({
         isRelayChanging: false,
-        'deviceData.relay_status': this.data.deviceData.relay_status === 'on' ? 'off' : 'on'
+        relay_status: this.data.relay_status === 'on' ? 'off' : 'on'
       });
       wx.showToast({
         title: '发送失败',
@@ -352,7 +447,7 @@ Page({
       return;
     }
 
-    const newStatus = this.data.deviceData.relay_in_status === 'on' ? 'off' : 'on';
+    const newStatus = this.data.relay_in_status === 'on' ? 'off' : 'on';
     const payload = JSON.stringify({ relay_in_status: newStatus });
 
     const success = mqttClient.publish(this.data.publishRelayInTopic, payload, 0);
@@ -379,14 +474,214 @@ Page({
     this.setData({ showTopicConfig: false });
   },
 
+  // 设备管理
+  showDeviceManageDialog() {
+    this.setData({ showDeviceManage: true });
+  },
+
+  hideDeviceManageDialog() {
+    this.setData({ showDeviceManage: false });
+  },
+
+  showAddDeviceDialog() {
+    this.setData({ showAddDevice: true, newDeviceName: '', newDeviceTopic: '' });
+  },
+
+  hideAddDeviceDialog() {
+    this.setData({ showAddDevice: false });
+  },
+
+  onNewDeviceNameInput(e) {
+    this.setData({ newDeviceName: e.detail.value });
+  },
+
+  onNewDeviceTopicInput(e) {
+    this.setData({ newDeviceTopic: e.detail.value });
+  },
+
+  addDevice() {
+    if (!this.data.newDeviceName.trim()) {
+      wx.showToast({ title: '请输入设备名称', icon: 'none' });
+      return;
+    }
+    if (!this.data.newDeviceTopic.trim()) {
+      wx.showToast({ title: '请输入订阅主题', icon: 'none' });
+      return;
+    }
+
+    const newDevice = {
+      id: Date.now().toString(),
+      name: this.data.newDeviceName,
+      subscribeTopic: this.data.newDeviceTopic,
+      publishRelayTopic: 'pc/1',
+      publishRelayInTopic: 'device/relay_in/control',
+      createdAt: new Date().toISOString()
+    };
+
+    this.setData({
+      deviceList: [...this.data.deviceList, newDevice],
+      showAddDevice: false
+    });
+    this.saveDeviceList();
+    wx.showToast({ title: '设备已添加', icon: 'success' });
+
+    // 切换到新设备
+    this.switchToDevice(newDevice.id);
+  },
+
+  deleteDevice(e) {
+    console.log('Delete device event:', e);
+    const deviceId = e.currentTarget.dataset.id;
+    console.log('Delete device ID:', deviceId);
+
+    if (this.data.deviceList.length <= 1) {
+      wx.showToast({ title: '至少保留一个设备', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除该设备吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const deviceList = this.data.deviceList;
+          const newList = [];
+          for (let i = 0; i < deviceList.length; i++) {
+            if (deviceList[i].id !== deviceId) {
+              newList.push(deviceList[i]);
+            }
+          }
+          this.setData({ deviceList: newList });
+          this.saveDeviceList();
+
+          // 如果删除的是当前设备，切换到第一个设备
+          if (deviceId === this.data.currentDeviceId && newList.length > 0) {
+            this.switchToDevice(newList[0].id);
+          }
+          wx.showToast({ title: '设备已删除', icon: 'success' });
+        }
+      }
+    });
+  },
+
+  switchToDevice(deviceId) {
+    let device = null;
+    const deviceList = this.data.deviceList;
+    for (let i = 0; i < deviceList.length; i++) {
+      if (deviceList[i].id === deviceId) {
+        device = deviceList[i];
+        break;
+      }
+    }
+    if (!device) return;
+
+    console.log('Switching to device:', device);
+
+    // 取消旧订阅
+    if (this.data.isSubscribed && this.data.subscribeTopic !== device.subscribeTopic) {
+      mqttClient.unsubscribe(this.data.subscribeTopic);
+    }
+
+    const isConnected = this.data.isConnected;
+
+    this.setData({
+      currentDeviceId: device.id,
+      currentDeviceName: device.name,
+      subscribeTopic: device.subscribeTopic,
+      publishRelayTopic: device.publishRelayTopic,
+      publishRelayInTopic: device.publishRelayInTopic,
+      subscribeInput: device.subscribeTopic,
+      publishRelayInput: device.publishRelayTopic,
+      publishRelayInInput: device.publishRelayInTopic,
+      deviceData: {}, // 清空数据
+      relay_status: 'off',
+      relay_in_status: 'off',
+      lastUpdateTime: null,
+      isSubscribed: false,
+      showDeviceManage: false
+    });
+
+    wx.setStorageSync('currentDeviceId', device.id);
+
+    // 重新订阅
+    if (isConnected) {
+      this.subscribeToDeviceTopic();
+    }
+
+    // 加载该设备的配置
+    this.loadDeviceConfig(device.id);
+
+    wx.showToast({
+      title: `已切换到${device.name}`,
+      icon: 'success'
+    });
+  },
+
+  loadDeviceConfig(deviceId) {
+    // 加载该设备的传感器配置和继电器名称
+    try {
+      const sensorConfig = wx.getStorageSync(`sensorConfig_${deviceId}`);
+      if (sensorConfig) {
+        this.setData({ sensorConfig });
+      } else {
+        this.setData({ sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig)) });
+      }
+
+      const relayNames = wx.getStorageSync(`relayNames_${deviceId}`);
+      if (relayNames) {
+        this.setData({ relayNames });
+      } else {
+        this.setData({
+          relayNames: { main: '主继电器', internal: '内部继电器' }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load device config:', e);
+    }
+  },
+
+  // 传感器管理
+  showSensorManageDialog() {
+    this.setData({ showSensorManage: true });
+  },
+
+  hideSensorManageDialog() {
+    this.setData({ showSensorManage: false });
+  },
+
+  toggleSensorVisibility(e) {
+    const index = e.currentTarget.dataset.index;
+    const key = `sensorConfig[${index}].visible`;
+    const currentValue = this.data.sensorConfig[index].visible;
+    this.setData({ [key]: !currentValue });
+  },
+
+  resetSensorConfig() {
+    wx.showModal({
+      title: '确认还原',
+      content: '确定要还原所有传感器配置到默认状态吗？',
+      success: (res) => {
+        if (res.confirm) {
+          this.setData({
+            sensorConfig: JSON.parse(JSON.stringify(this.defaultSensorConfig))
+          });
+          this.saveSensorConfig();
+        }
+      }
+    });
+  },
+
+  saveSensorManageSettings() {
+    this.setData({ showSensorManage: false });
+    this.saveSensorConfig();
+  },
+
   // 名称配置
   showNameConfigDialog() {
     this.setData({
       showNameConfig: true,
-      nameSensor1Input: this.data.deviceNames.sensor1,
-      nameSensor4Input: this.data.deviceNames.sensor4,
-      nameRelayInput: this.data.deviceNames.relay,
-      nameRelayInInput: this.data.deviceNames.relayIn
+      nameRelayInput: this.data.relayNames.main,
+      nameRelayInInput: this.data.relayNames.internal
     });
   },
 
@@ -406,20 +701,18 @@ Page({
     this.setData({ publishRelayInInput: e.detail.value });
   },
 
-  onNameSensor1Input(e) {
-    this.setData({ nameSensor1Input: e.detail.value });
-  },
-
-  onNameSensor4Input(e) {
-    this.setData({ nameSensor4Input: e.detail.value });
-  },
-
   onNameRelayInput(e) {
     this.setData({ nameRelayInput: e.detail.value });
   },
 
   onNameRelayInInput(e) {
     this.setData({ nameRelayInInput: e.detail.value });
+  },
+
+  onSensorLabelInput(e) {
+    const index = e.currentTarget.dataset.index;
+    const key = `sensorConfig[${index}].label`;
+    this.setData({ [key]: e.detail.value });
   },
 
   saveTopicSettings() {
@@ -439,15 +732,13 @@ Page({
 
   saveNameSettings() {
     this.setData({
-      deviceNames: {
-        sensor1: this.data.nameSensor1Input || '传感器 1',
-        sensor4: this.data.nameSensor4Input || '传感器 4',
-        relay: this.data.nameRelayInput || '主继电器',
-        relayIn: this.data.nameRelayInInput || '内部继电器'
+      relayNames: {
+        main: this.data.nameRelayInput || '主继电器',
+        internal: this.data.nameRelayInInput || '内部继电器'
       },
       showNameConfig: false
     });
-    this.saveNameConfig();
+    this.saveRelayNames();
   },
 
   // 刷新数据
