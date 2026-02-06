@@ -143,240 +143,497 @@ page {
   height: 80px;
 }
 
-/* ================== 状态卡片 ================== */
-.tech-status-card {
-  margin: 16px;
-  padding: 24px;
-  background: linear-gradient(135deg, rgba(16, 33, 64, 0.8) 0%, rgba(10, 25, 47, 0.9) 100%);
-  border-radius: 20px;
-  border: 1px solid rgba(0, 245, 255, 0.2);
+/* ================== 紧凑状态栏 ================== */
+.compact-status-bar {
+  margin: 12px 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.9) 0%, rgba(10, 25, 47, 0.95) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.tech-status-card::before {
+.compact-status-bar::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(0, 245, 255, 0.1), transparent 60%);
-  pointer-events: none;
-}
-
-.tech-bg-grid {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  padding: 20px;
-  opacity: 0.3;
-}
-
-.grid-line {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.5), transparent);
 }
 
-.tech-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
-  border: 1px solid rgba(0, 245, 255, 0.2);
-  border-radius: 50%;
-  animation: rotateSlow 30s linear infinite;
-}
-
-@keyframes rotateSlow {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.status-center {
+.status-main {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 20px 0;
-  position: relative;
-  z-index: 1;
+  gap: 12px;
 }
 
-.status-hexagon {
+.status-indicator-mini {
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin-bottom: 16px;
 }
 
-.hexagon-inner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90px;
-  height: 90px;
+.mini-hexagon {
+  width: 50px;
+  height: 50px;
+  position: relative;
   background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(0, 128, 255, 0.1));
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: miniGlow 2s ease-in-out infinite;
 }
 
-.status-hexagon.connected .hexagon-inner {
+.mini-hexagon.connected {
   background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.1));
 }
 
-.hexagon-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(0, 245, 255, 0.3), transparent 70%);
-  animation: glowPulse 2s ease-in-out infinite;
+@keyframes miniGlow {
+  0%, 100% { box-shadow: 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 20px currentColor; }
 }
 
-.status-hexagon.connected .hexagon-glow {
-  background: radial-gradient(circle, rgba(0, 255, 136, 0.3), transparent 70%);
+.mini-status-icon {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 0 8px currentColor);
 }
 
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-}
-
-.status-text-main {
-  font-size: 20px;
-  font-weight: 700;
-  color: #00F5FF;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
-  margin-bottom: 8px;
-}
-
-.status-hexagon.connected ~ .status-text-main {
-  color: #00FF88;
-  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-}
-
-.status-tech-info {
-  font-size: 14px;
-  color: #8B9BB4;
-  margin-bottom: 20px;
-}
-
-.connect-control {
-  width: 100%;
-  margin-top: 12px;
-}
-
-.tech-button {
-  width: 100%;
-  height: 56px;
-  border-radius: 14px;
-  border: none;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(0, 128, 255, 0.1));
-  border: 1px solid rgba(0, 245, 255, 0.4);
-  cursor: pointer;
-}
-
-.tech-button.connected {
-  background: linear-gradient(135deg, rgba(255, 100, 100, 0.15), rgba(200, 50, 50, 0.1));
-  border-color: rgba(255, 100, 100, 0.4);
-}
-
-.button-glow {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.3), transparent);
-  animation: buttonGlow 3s ease-in-out infinite;
-}
-
-.tech-button.connected .button-glow {
-  background: linear-gradient(90deg, transparent, rgba(255, 100, 100, 0.3), transparent);
-}
-
-@keyframes buttonGlow {
-  0% { left: -100%; }
-  50%, 100% { left: 100%; }
-}
-
-.button-content {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  height: 100%;
-}
-
-.button-icon {
-  font-size: 20px;
-}
-
-.button-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #00F5FF;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.tech-button.connected .button-text {
-  color: #FF6464;
-}
-
-.status-data-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(0, 245, 255, 0.15);
-}
-
-.data-item {
+.status-text-group {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 2px;
 }
 
-.data-value {
-  font-size: 24px;
+.status-text-compact {
+  font-size: 16px;
   font-weight: 700;
   color: #00F5FF;
   text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
 }
 
-.data-label {
+.mini-hexagon.connected ~ .status-text-group .status-text-compact {
+  color: #00FF88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.status-info-compact {
   font-size: 12px;
-  color: #6B7D94;
-  margin-top: 4px;
+  color: #8B9BB4;
+}
+
+.status-actions {
+  display: flex;
+  align-items: center;
+}
+
+.compact-connect-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(0, 128, 255, 0.1));
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.compact-connect-btn.connected {
+  background: linear-gradient(135deg, rgba(255, 100, 100, 0.2), rgba(200, 50, 50, 0.1));
+  border-color: rgba(255, 100, 100, 0.4);
+}
+
+.compact-btn-icon {
+  font-size: 18px;
+}
+
+/* ================== 压缩机展示区 ================== */
+.compressor-showcase {
+  margin: 16px;
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.9) 0%, rgba(10, 25, 47, 0.95) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.compressor-showcase::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00F5FF, #00FF88, #00F5FF);
+  animation: scanLine 3s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: rgba(0, 245, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.showcase-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #00F5FF;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.data-divider {
-  width: 1px;
-  height: 30px;
-  background: linear-gradient(180deg, transparent, rgba(0, 245, 255, 0.3), transparent);
+.live-badge {
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #FF0000, #FF4444);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  animation: liveBlink 1s ease-in-out infinite;
+}
+
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.quick-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 8px;
+}
+
+.stat-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00F5FF;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #8B9BB4;
+  text-transform: uppercase;
+}
+
+.compressor-dashboard {
+  padding: 20px;
+}
+
+/* 温度展示区 */
+.temp-showcase {
+  margin-bottom: 24px;
+}
+
+.temp-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.temp-point {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: rgba(0, 245, 255, 0.08);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
+  min-width: 80px;
+}
+
+.temp-point.inlet {
+  border-color: rgba(0, 245, 255, 0.4);
+}
+
+.temp-point.outlet {
+  border-color: rgba(255, 100, 100, 0.4);
+}
+
+.temp-icon {
+  font-size: 24px;
+}
+
+.temp-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.temp-label {
+  font-size: 12px;
+  color: #8B9BB4;
+  text-transform: uppercase;
+}
+
+.temp-value-main {
+  font-size: 20px;
+  font-weight: 700;
+  color: #E8F4FF;
+}
+
+.flow-arrow {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-line {
+  width: 24px;
+  height: 2px;
+  background: linear-gradient(90deg, #00F5FF, #0080FF);
+  border-radius: 1px;
+}
+
+.arrow-head {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 8px solid #0080FF;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* 温差展示 */
+.temp-diff-showcase {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.diff-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.diff-circle.normal-temp {
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.1));
+  border: 2px solid #00FF88;
+}
+
+.diff-circle.high-temp {
+  background: radial-gradient(circle, rgba(255, 100, 100, 0.2), rgba(200, 50, 50, 0.1));
+  border: 2px solid #FF6464;
+}
+
+.diff-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: #E8F4FF;
+}
+
+.diff-unit {
+  font-size: 12px;
+  color: #8B9BB4;
+}
+
+.diff-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diff-label {
+  font-size: 14px;
+  color: #8B9BB4;
+}
+
+.diff-status {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.diff-status.normal {
+  color: #00FF88;
+}
+
+.diff-status.warning {
+  color: #FF6464;
+}
+
+/* 风扇展示区 */
+.fan-showcase {
+  padding: 16px;
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.fan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.fan-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #A8B8D4;
+}
+
+.fan-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.fan-indicator.running {
+  background: #00FF88;
+  box-shadow: 0 0 10px #00FF88;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.fan-indicator.stopped {
+  background: #FF6464;
+  box-shadow: 0 0 10px #FF6464;
+}
+
+.fan-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fan-visual {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fan-symbol {
+  font-size: 40px;
+}
+
+.fan-visual.rotating .fan-symbol {
+  animation: rotate 2s linear infinite;
+}
+
+.fan-visual.stopped .fan-symbol {
+  opacity: 0.3;
+}
+
+.fan-status-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fan-status-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.fan-status-text.running {
+  color: #00FF88;
+}
+
+.fan-status-text.stopped {
+  color: #FF6464;
+}
+
+.fan-reason {
+  font-size: 13px;
+  color: #8B9BB4;
+  line-height: 1.4;
+}
+
+/* ================== 紧凑设备选择器 ================== */
+.compact-device-selector {
+  margin: 0 16px 16px;
+}
+
+.selector-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.8) 0%, rgba(10, 25, 47, 0.9) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00F5FF;
+}
+
+.device-select-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 8px;
+  min-width: 120px;
+}
+
+.current-device-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #E8F4FF;
+  flex: 1;
+}
+
+.select-arrow {
+  font-size: 10px;
+  color: #8B9BB4;
 }
 
 /* ================== 卡片通用 ================== */
@@ -1441,6 +1698,362 @@ page {
 .empty-text {
   font-size: 14px;
   color: #5A6B80;
+}
+
+/* ================== 设备选择器 ================== */
+.device-selector {
+  margin: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.8) 0%, rgba(10, 25, 47, 0.9) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.device-selector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.3), transparent);
+}
+
+.selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.selector-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00F5FF;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.current-device {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 245, 255, 0.1);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 8px;
+}
+
+.current-label {
+  font-size: 12px;
+  color: #6B7D94;
+}
+
+.current-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #00F5FF;
+}
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.device-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.device-item:active {
+  transform: scale(0.98);
+  background: rgba(0, 245, 255, 0.1);
+}
+
+.device-item.active {
+  background: rgba(0, 245, 255, 0.15);
+  border-color: rgba(0, 245, 255, 0.4);
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #E8F4FF;
+}
+
+.device-topic {
+  font-size: 12px;
+  color: #8B9BB4;
+  font-family: monospace;
+}
+
+.device-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 100, 100, 0.2);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+}
+
+.device-status.selected {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: rgba(0, 255, 136, 0.4);
+}
+
+.status-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FF6464;
+}
+
+.device-status.selected .status-text {
+  color: #00FF88;
+}
+
+/* ================== 压缩机监控 ================== */
+.compressor-monitor {
+  margin: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(16, 33, 64, 0.8) 0%, rgba(10, 25, 47, 0.9) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.compressor-monitor::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.3), transparent);
+}
+
+.monitor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.monitor-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00F5FF;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.monitor-badge {
+  padding: 4px 10px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #00FF88;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.temp-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.1);
+}
+
+.temp-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.temp-label {
+  font-size: 12px;
+  color: #6B7D94;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.temp-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E8F4FF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+}
+
+.temp-arrow {
+  font-size: 20px;
+  color: #00F5FF;
+  margin: 0 8px;
+  font-weight: bold;
+}
+
+.temp-diff {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 245, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 245, 255, 0.2);
+}
+
+.diff-label {
+  font-size: 11px;
+  color: #6B7D94;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.diff-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.high-temp {
+  color: #FF6464;
+  text-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+}
+
+.normal-temp {
+  color: #00FF88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* 风扇状态面板 */
+.fan-status-panel {
+  padding: 16px;
+  background: rgba(0, 245, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 245, 255, 0.15);
+}
+
+.fan-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.fan-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #A8B8D4;
+}
+
+.status-indicator-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-indicator-light.running {
+  background: #00FF88;
+  box-shadow: 0 0 10px #00FF88;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.status-indicator-light.stopped {
+  background: #FF6464;
+  box-shadow: 0 0 10px #FF6464;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.fan-status-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fan-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.fan-emoji {
+  font-size: 32px;
+}
+
+.fan-icon.rotating .fan-emoji {
+  animation: rotate 2s linear infinite;
+}
+
+.fan-icon.stopped .fan-emoji {
+  opacity: 0.3;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fan-status-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-text {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.status-text.running {
+  color: #00FF88;
+}
+
+.status-text.stopped {
+  color: #FF6464;
+}
+
+.status-reason {
+  font-size: 12px;
+  color: #8B9BB4;
+  line-height: 1.4;
 }
 
 .tech-link {

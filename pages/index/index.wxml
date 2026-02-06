@@ -21,59 +21,120 @@ eb<!-- 科技风格布局 -->
   <scroll-view class="tech-content" scroll-y="true">
     <!-- 首页 -->
     <view wx:if="{{activeTab === 'home'}}">
-      <!-- 科技感状态卡片 -->
-      <view class="tech-status-card">
-        <!-- 背景装饰 -->
-        <view class="tech-bg-grid">
-          <view class="grid-line"></view>
-          <view class="grid-line"></view>
-          <view class="grid-line"></view>
-        </view>
-        <view class="tech-circle"></view>
-
-        <!-- 核心状态展示 -->
-        <view class="status-center">
-          <view class="status-hexagon {{connectionStatus}}">
-            <view class="hexagon-inner">
+      <!-- 紧凑型状态栏 -->
+      <view class="compact-status-bar">
+        <view class="status-main">
+          <view class="status-indicator-mini {{connectionStatus}}">
+            <view class="mini-hexagon {{connectionStatus}}">
               <image
                 src="{{isConnected ? '/assets/icons/connect.svg' : '/assets/icons/wifi.svg'}}"
-                class="status-icon-img"
+                class="mini-status-icon"
                 mode="aspectFit"
               />
             </view>
-            <view class="hexagon-glow"></view>
           </view>
-          <text class="status-text-main">{{isConnected ? '系统在线' : '离线状态'}}</text>
-          <text class="status-tech-info">{{debugInfo || '等待连接指令'}}</text>
+          <view class="status-text-group">
+            <text class="status-text-compact">{{isConnected ? '系统在线' : '离线状态'}}</text>
+            <text class="status-info-compact">{{debugInfo || '等待连接指令'}}</text>
+          </view>
         </view>
-
-        <!-- 科技感连接按钮 -->
-        <view class="connect-control">
-          <button class="tech-button {{connectionStatus}}" bindtap="{{isConnected ? 'disconnect' : 'connect'}}">
-            <view class="button-glow"></view>
-            <view class="button-content">
-              <text class="button-icon">{{isConnected ? '⚡' : '🔌'}}</text>
-              <text class="button-text">{{isConnected ? '断开连接' : '建立连接'}}</text>
-            </view>
+        
+        <view class="status-actions">
+          <button class="compact-connect-btn {{connectionStatus}}" bindtap="{{isConnected ? 'disconnect' : 'connect'}}">
+            <text class="compact-btn-icon">{{isConnected ? '⚡' : '🔌'}}</text>
           </button>
         </view>
+      </view>
 
-        <!-- 底部数据条 -->
-        <view class="status-data-bar">
-          <view class="data-item">
-            <text class="data-value">{{subscribedTopics.length}}</text>
-            <text class="data-label">订阅主题</text>
+      <!-- 压缩机监控 - 突出展示 -->
+      <view class="compressor-showcase" wx:if="{{isConnected}}">
+        <view class="showcase-header">
+          <view class="showcase-title">
+            <text class="main-title">压缩机实时监控</text>
+            <view class="live-badge">LIVE</view>
           </view>
-          <view class="data-divider"></view>
-          <view class="data-item">
-            <text class="data-value">{{messages.length}}</text>
-            <text class="data-label">消息总数</text>
+          <view class="quick-stats">
+            <view class="stat-chip">
+              <text class="stat-number">{{messages.length}}</text>
+              <text class="stat-label">消息</text>
+            </view>
           </view>
-          <view class="data-divider"></view>
-          <view class="data-item">
-            <text class="data-value">{{isConnected ? '1' : '0'}}</text>
-            <text class="data-label">连接状态</text>
+        </view>
+        
+        <view class="compressor-dashboard">
+          <!-- 温度显示区 -->
+          <view class="temp-showcase">
+            <view class="temp-flow">
+              <view class="temp-point inlet">
+                <view class="temp-icon">🌡️</view>
+                <view class="temp-content">
+                  <text class="temp-label">进温</text>
+                  <text class="temp-value-main">{{comp1InTemp !== null ? comp1InTemp + '°F' : '--'}}</text>
+                </view>
+              </view>
+              
+              <view class="flow-arrow">
+                <view class="arrow-line"></view>
+                <view class="arrow-head"></view>
+              </view>
+              
+              <view class="temp-point outlet">
+                <view class="temp-icon">🌡️</view>
+                <view class="temp-content">
+                  <text class="temp-label">出温</text>
+                  <text class="temp-value-main">{{comp1OutTemp !== null ? comp1OutTemp + '°F' : '--'}}</text>
+                </view>
+              </view>
+            </view>
+            
+            <!-- 温差显示 -->
+            <view class="temp-diff-showcase">
+              <view class="diff-circle {{tempDiff >= tempDiffThreshold ? 'high-temp' : 'normal-temp'}}">
+                <text class="diff-number">{{tempDiff !== null ? tempDiff : '--'}}</text>
+                <text class="diff-unit">°C</text>
+              </view>
+              <view class="diff-info">
+                <text class="diff-label">温差</text>
+                <text class="diff-status {{tempDiff >= tempDiffThreshold ? 'warning' : 'normal'}}">
+                  {{tempDiff !== null ? (tempDiff >= tempDiffThreshold ? '过高' : '正常') : '待检测'}}
+                </text>
+              </view>
+            </view>
           </view>
+          
+          <!-- 风扇状态区 -->
+          <view class="fan-showcase">
+            <view class="fan-header">
+              <text class="fan-title">风扇控制系统</text>
+              <view class="fan-indicator {{fanStatus === 'running' ? 'running' : 'stopped'}}"></view>
+            </view>
+            <view class="fan-display">
+              <view class="fan-visual {{fanStatus === 'running' ? 'rotating' : 'stopped'}}">
+                <text class="fan-symbol">🌀</text>
+              </view>
+              <view class="fan-status-main">
+                <text class="fan-status-text {{fanStatus === 'running' ? 'running' : 'stopped'}}">
+                  {{fanStatus === 'running' ? '风扇正常运转' : '风扇保护性停转'}}
+                </text>
+                <text class="fan-reason">
+                  {{tempDiff !== null ? (tempDiff >= tempDiffThreshold ? '温度差超标触发保护' : '温度正常维持运转') : '等待传感器数据'}}
+                </text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 设备选择器 - 紧凑版 -->
+      <view class="compact-device-selector" wx:if="{{isConnected && deviceList.length > 1}}">
+        <view class="selector-compact">
+          <text class="selector-label">设备</text>
+          <picker bindchange="onDeviceSelect" range="{{deviceList}}" range-key="name">
+            <view class="device-select-compact">
+              <text class="current-device-name">{{currentDeviceName || '未选择'}}</text>
+              <text class="select-arrow">▼</text>
+            </view>
+          </picker>
         </view>
       </view>
 
@@ -135,53 +196,7 @@ eb<!-- 科技风格布局 -->
         </view>
       </view>
 
-      <!-- 科技感订阅区域 -->
-      <view class="tech-card">
-        <view class="tech-card-header">
-          <text class="tech-card-title">主题订阅</text>
-          <view class="tech-badge">{{subscribedTopics.length}}</view>
-        </view>
-        <view class="tech-input-wrapper">
-          <view class="tech-input-bg"></view>
-          <input class="tech-input" placeholder="输入订阅主题..." value="{{newTopic}}" bindinput="onTopicInput" disabled="{{!isConnected}}" />
-          <button class="tech-action-btn" bindtap="subscribeTopic" disabled="{{!isConnected}}">
-            <image src="/assets/icons/subscribe.svg" class="action-icon-img" mode="aspectFit" />
-          </button>
-        </view>
-        <view class="tech-tag-container">
-          <view wx:for="{{subscribedTopics}}" wx:key="*this" class="tech-tag">
-            <text class="tech-tag-text">{{item}}</text>
-            <view class="tech-tag-close" bindtap="unsubscribeTopic" data-topic="{{item}}">×</view>
-            <view class="tech-tag-line"></view>
-          </view>
-          <view wx:if="{{subscribedTopics.length === 0}}" class="tech-empty">
-            <text class="empty-icon">⚪</text>
-            <text class="empty-text">暂无订阅主题</text>
-          </view>
-        </view>
-      </view>
 
-      <!-- 科技感发布区域 -->
-      <view class="tech-card">
-        <view class="tech-card-header">
-          <text class="tech-card-title">消息发布</text>
-          <view class="tech-deco-line"></view>
-        </view>
-        <view class="tech-input-group">
-          <view class="tech-input-bg"></view>
-          <input class="tech-input" placeholder="目标主题" value="{{publishTopic}}" bindinput="onPublishTopicInput" disabled="{{!isConnected}}" />
-        </view>
-        <view class="tech-input-group" style="margin-top: 12px;">
-          <view class="tech-input-bg"></view>
-          <textarea class="tech-textarea" placeholder="消息内容..." value="{{publishMessage}}" bindinput="onPublishMessageInput" disabled="{{!isConnected}}" />
-        </view>
-        <button class="tech-submit-btn" bindtap="publishMessage" disabled="{{!isConnected}}">
-          <view class="btn-gradient"></view>
-          <image src="/assets/icons/publish.svg" class="submit-icon-img" mode="aspectFit" />
-          <text class="btn-label">发送消息</text>
-          <view class="btn-particles"></view>
-        </button>
-      </view>
 
       <!-- 科技感最近消息 -->
       <view class="tech-card">
