@@ -151,9 +151,14 @@ Page({
         const currentId = wx.getStorageSync('currentDeviceId');
         console.log('Loaded currentDeviceId from storage:', currentId, 'type:', typeof currentId);
         if (currentId) {
-          // 确保转换为字符串进行比较
+          // 尝试切换
           this.switchToDevice(String(currentId));
-        } else if (list.length > 0) {
+          // 如果切换失败（currentDeviceId 没设成功），则自动选第一个
+          if (!this.data.currentDeviceId && list.length > 0) {
+            this.switchToDevice(list[0].id);
+          }
+        } else {
+          // 没有 currentId 直接选第一个
           this.switchToDevice(list[0].id);
         }
       } else {
@@ -533,8 +538,9 @@ Page({
     this.saveDeviceList();
     wx.showToast({ title: '设备已添加', icon: 'success' });
 
-    // 切换到新设备
+    // 切换到新设备并持久化
     this.switchToDevice(newDevice.id);
+    wx.setStorageSync('currentDeviceId', newDevice.id);
   },
 
   deleteDevice(event) {
