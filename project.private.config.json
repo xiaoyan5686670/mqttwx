@@ -1,6 +1,5 @@
 {
-  "libVersion": "3.14.1",
-  "projectname": "mqttwx",
+  "description": "private config",
   "setting": {
     "urlCheck": false,
     "coverView": true,
@@ -8,15 +7,17 @@
     "skylineRenderEnable": false,
     "preloadBackgroundData": false,
     "autoAudits": false,
-    "showShadowRootInWxmlPanel": true,
-    "compileHotReLoad": true,
     "useApiHook": true,
+    "useApiHostProcess": true,
+    "showShadowRootInWxmlPanel": true,
     "useStaticServer": false,
     "useLanDebug": false,
     "showES6CompileOption": false,
+    "compileHotReLoad": false,
     "checkInvalidKey": true,
-    "ignoreDevUnusedFiles": false,
+    "ignoreDevUnusedFiles": true,
     "bigPackageSizeSupport": false
   },
-  "condition": {}
+  "condition": {},
+  "libVersion": "2.19.4"
 }

@@ -1,48 +1,80 @@
 {
-  "compileType": "miniprogram",
-  "libVersion": "3.14.1",
+  "description": "项目配置文件",
   "packOptions": {
     "ignore": [],
     "include": []
   },
   "setting": {
-    "coverView": true,
+    "urlCheck": false,
     "es6": true,
-    "postcss": true,
-    "minified": true,
     "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": false,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
     "showShadowRootInWxmlPanel": true,
-    "packNpmRelationList": [],
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "lazyloadPlaceholderEnable": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
     },
-    "compileWorklet": false,
-    "uglifyFileName": false,
-    "uploadWithSourceMap": true,
+    "enableEngineNative": false,
+    "useIsolateContext": true,
+    "userConfirmedBundleSwitch": false,
     "packNpmManually": false,
+    "packNpmRelationList": [],
     "minifyWXSS": true,
-    "minifyWXML": true,
-    "localPlugins": false,
     "disableUseStrict": false,
+    "minifyWXML": true,
+    "showES6CompileOption": false,
     "useCompilerPlugins": false,
-    "condition": false,
-    "swc": false,
-    "ignoreDevUnusedFiles": false,
-    "ignoreUploadUnusedFiles": false,
-    "skipAudits": false,
-    "network": {
-      "ignoreHttpsErrors": true
-    },
-    "disableSWC": true
+    "ignoreUploadUnusedFiles": true,
+    "useStaticServer": false
   },
+  "compileType": "miniprogram",
+  "libVersion": "2.19.4",
   "appid": "wx4f62ef17234e51c0",
   "projectname": "miniprogram-1",
-  "condition": {},
-  "editorSetting": {
-    "tabIndent": "insertSpaces",
-    "tabSize": 2
+  "debugOptions": {
+    "hidedInDevtools": []
   },
-  "simulatorPluginLibVersion": {}
+  "scripts": {},
+  "staticServerOptions": {
+    "baseURL": "",
+    "servePath": ""
+  },
+  "isGameTourist": false,
+  "condition": {
+    "search": {
+      "list": []
+    },
+    "conversation": {
+      "list": []
+    },
+    "game": {
+      "list": []
+    },
+    "plugin": {
+      "list": []
+    },
+    "gamePlugin": {
+      "list": []
+    },
+    "miniprogram": {
+      "list": []
+    }
+  }
 }

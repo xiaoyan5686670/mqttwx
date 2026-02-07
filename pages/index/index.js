@@ -48,14 +48,14 @@ Page({
     filterTopic: '', // 主题过滤
     messageType: 'all', // 消息类型: all, received, sent
 
-    // 服务器配置 - 预设为用户私有服务器
+    // 服务器配置 - 使用用户内网服务器
     serverConfig: {
-      broker: '172.16.208.176',
-      port: 8084,
-      protocol: 'wss',
+      broker: '192.168.1.3',
+      port: 8083,  // 内网服务器非加密端口
+      protocol: 'ws',   // 使用ws而不是wss避免SSL证书问题
       clientId: '',
-      username: 'hhb',  // 用户名
-      password: '123456'   // 密码
+      username: 'qxy1',  // 用户内网服务器认证
+      password: '5686670'  // 用户内网服务器认证
     },
     presetServers: [],
     customServers: [],

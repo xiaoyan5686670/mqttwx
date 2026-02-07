@@ -14,20 +14,22 @@ class MQTTClient {
     this.reconnectTimer = null;
     this.pingTimer = null;
     this.connackTimeout = null;
+    this.stopReconnect = false;
+    this.userRequestedDisconnect = false;  // 新增：标记用户主动断开连接
     
-    // 默认服务器配置
+    // 默认服务器配置 - 使用用户内网服务器
     this.defaultConfig = {
-      broker: '172.16.208.176',
-      port: 8084,
-      protocol: 'wss',
+      broker: '192.168.1.3',
+      port: 8083,  // 内网服务器非加密端口
+      protocol: 'ws',   // 使用ws而不是wss避免SSL证书问题
       clientId: 'miniprogram_' + Math.random().toString(16).substr(2, 8),
       keepAlive: 60,
       cleanSession: true,
       reconnectPeriod: 5000,
       connectTimeout: 30 * 1000,
       connackTimeout: 10 * 1000,
-      username: 'hhb',  // 添加用户名支持
-      password: '123456',  // 添加密码支持
+      username: 'qxy1',  // 用户内网服务器认证
+      password: '5686670',  // 用户内网服务器认证
       ignoreSSLErrors: true  // 添加SSL错误忽略选项
     };
     
@@ -403,7 +405,7 @@ class MQTTClient {
   }
 
   // Connect to MQTT broker
-  connect() {
+  connect(allowReconnect = false) {
     // 每次连接前重新加载配置
     this.loadCustomConfig();
     
@@ -417,6 +419,12 @@ class MQTTClient {
       return Promise.reject(new Error('Connection already in progress'));
     }
 
+    // 如果是连接失败后的重连，需要用户明确允许
+    if (!allowReconnect && (this.userRequestedDisconnect || this.stopReconnect)) {
+      console.log('MQTTClient: Connection cancelled by user, not reconnecting');
+      return Promise.reject(new Error('Connection was cancelled by user'));
+    }
+
     this.isConnecting = true;
     clearTimeout(this.reconnectTimer);
     clearTimeout(this.connackTimeout);
@@ -428,6 +436,7 @@ class MQTTClient {
       console.log('MQTTClient: Client ID:', this.config.clientId);
       console.log('MQTTClient: Full config:', this.config);
       console.log('MQTTClient: SSL Error Ignore:', this.config.ignoreSSLErrors);
+      console.log('MQTTClient: Allow reconnect:', allowReconnect);
       
       try {
         // Create WebSocket connection using WeChat API
@@ -461,36 +470,37 @@ class MQTTClient {
           }
         };
 
-        // 如果配置了忽略SSL错误，添加相应参数
-        if (this.config.ignoreSSLErrors) {
-          socketOptions.tcpNoDelay = true;
-          console.log('MQTTClient: SSL verification will be ignored');
-        }
+    // 如果配置了忽略SSL错误，添加相应参数
+    if (this.config.ignoreSSLErrors) {
+      socketOptions.tcpNoDelay = true;
+      console.log('MQTTClient: SSL verification will be ignored');
+    }
 
-        this.socket = wx.connectSocket(socketOptions);
+    this.socket = wx.connectSocket(socketOptions);
 
-        if (!this.socket) {
-          throw new Error('Failed to create WebSocket connection');
-        }
+    if (!this.socket) {
+      throw new Error('Failed to create WebSocket connection');
+    }
 
-        // Set up WebSocket event handlers
-        this.setupSocketEvents(resolve, reject);
+    // Set up WebSocket event handlers
+    this.setupSocketEvents(resolve, reject);
 
-        // Set overall connection timeout
-        setTimeout(() => {
-          if (this.isConnecting && !this.isConnected) {
-            console.error('MQTTClient: Overall connection timeout');
-            this.handleConnectionError(new Error('Connection timeout - no response from server'));
-            reject(new Error('Connection timeout - no response from server'));
-          }
-        }, this.config.connectTimeout);
-
-      } catch (error) {
-        console.error('MQTTClient: Exception during connection setup:', error);
-        this.isConnecting = false;
-        reject(error);
+    // Set overall connection timeout
+    setTimeout(() => {
+      if (this.isConnecting && !this.isConnected) {
+        console.error('MQTTClient: Overall connection timeout');
+        this.handleConnectionError(new Error('Connection timeout - no response from server'));
+        reject(new Error('Connection timeout - no response from server'));
       }
-    });
+    }, this.config.connectTimeout);
+
+  } catch (error) {
+    console.error('MQTTClient: Exception during connection setup:', error);
+    this.isConnecting = false;
+    this.userRequestedDisconnect = false; // 重置标志
+    reject(error);
+  }
+});
   }
 
   setupSocketEvents(resolve, reject) {
@@ -705,12 +715,14 @@ class MQTTClient {
     clearTimeout(this.connackTimeout);
     this.triggerConnectCallbacks(false);
 
-    // 只在未主动停止时才重连
-    if (this.config.reconnectPeriod > 0 && !this.stopReconnect) {
+    // 连接失败时不要立即重连，让用户决定是否重试
+    // 只有在网络异常断开且不是用户主动停止时才重连
+    if (this.config.reconnectPeriod > 0 && !this.stopReconnect && !this.userRequestedDisconnect) {
       console.log(`MQTTClient: Scheduling reconnection in ${this.config.reconnectPeriod}ms`);
       this.reconnectTimer = setTimeout(() => {
-        if (!this.stopReconnect) {
-          this.connect().catch(err => {
+        if (!this.stopReconnect && !this.userRequestedDisconnect) {
+          // 重连时需要显式允许重连
+          this.connect(true).catch(err => {
             console.error('MQTTClient: Reconnection failed:', err);
           });
         }
@@ -730,17 +742,24 @@ class MQTTClient {
 
     this.triggerDisconnectCallbacks();
 
-    // 只在未主动停止时才重连
-    if (this.config.reconnectPeriod > 0 && !this.stopReconnect) {
-      console.log(`MQTTClient: Scheduling reconnection in ${this.config.reconnectPeriod}ms`);
+    // 只有网络异常断开且不是用户主动断开时才重连
+    // 连接失败属于异常断开，不应该自动重连
+    if (this.config.reconnectPeriod > 0 && !this.stopReconnect && !this.userRequestedDisconnect) {
+      console.log(`MQTTClient: Network disconnection detected, scheduling reconnection in ${this.config.reconnectPeriod}ms`);
       this.reconnectTimer = setTimeout(() => {
-        if (!this.stopReconnect) {
-          this.connect().catch(err => {
+        if (!this.stopReconnect && !this.userRequestedDisconnect) {
+          // 重连时需要显式允许重连
+          this.connect(true).catch(err => {
             console.error('MQTTClient: Reconnection failed:', err);
           });
         }
       }, this.config.reconnectPeriod);
+    } else {
+      console.log('MQTTClient: User requested disconnect or reconnect disabled, no automatic reconnection');
     }
+    
+    // 重置用户主动断开标志
+    this.userRequestedDisconnect = false;
   }
 
   startKeepAlive() {
@@ -785,6 +804,9 @@ class MQTTClient {
   // Disconnect from broker
   disconnect() {
     console.log('MQTTClient: Disconnecting...');
+    
+    // 标记为用户主动断开
+    this.userRequestedDisconnect = true;
 
     // 停止自动重连
     this.stopReconnect = true;
