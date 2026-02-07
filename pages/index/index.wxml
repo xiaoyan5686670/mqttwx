@@ -62,28 +62,36 @@ eb<!-- 科技风格布局 -->
         </view>
         
         <view class="compressor-dashboard">
-          <!-- 温度显示区 -->
-          <view class="temp-showcase">
-            <view class="temp-flow">
-              <view class="temp-point inlet">
-                <view class="temp-icon">🌡️</view>
-                <view class="temp-content">
-                  <text class="temp-label">进温</text>
-                  <text class="temp-value-main">{{comp1InTemp !== null ? comp1InTemp + '°F' : '--'}}</text>
+          <!-- 风扇状态区（整合温度显示） -->
+          <view class="fan-showcase">
+            <!-- 温度显示+风扇头部组合区域 -->
+            <view class="fan-header-with-temp">
+              <view class="temp-flow compact">
+                <view class="temp-point inlet">
+                  <view class="temp-icon">🌡️</view>
+                  <view class="temp-content">
+                    <text class="temp-label">进温</text>
+                    <text class="temp-value-main">{{comp1InTemp !== null ? comp1InTemp + '°F' : '--'}}</text>
+                  </view>
+                </view>
+                
+                <view class="flow-arrow">
+                  <view class="arrow-line"></view>
+                  <view class="arrow-head"></view>
+                </view>
+                
+                <view class="temp-point outlet">
+                  <view class="temp-icon">🌡️</view>
+                  <view class="temp-content">
+                    <text class="temp-label">出温</text>
+                    <text class="temp-value-main">{{comp1OutTemp !== null ? comp1OutTemp + '°F' : '--'}}</text>
+                  </view>
                 </view>
               </view>
               
-              <view class="flow-arrow">
-                <view class="arrow-line"></view>
-                <view class="arrow-head"></view>
-              </view>
-              
-              <view class="temp-point outlet">
-                <view class="temp-icon">🌡️</view>
-                <view class="temp-content">
-                  <text class="temp-label">出温</text>
-                  <text class="temp-value-main">{{comp1OutTemp !== null ? comp1OutTemp + '°F' : '--'}}</text>
-                </view>
+              <view class="fan-header">
+                <text class="fan-title">风扇控制系统</text>
+                <view class="fan-indicator {{fanStatus === 'running' ? 'running' : 'stopped'}}"></view>
               </view>
             </view>
             
@@ -100,14 +108,7 @@ eb<!-- 科技风格布局 -->
                 <view class="threshold-option {{tempDiffThreshold != 10 && tempDiffThreshold != 15 && tempDiffThreshold != 20 ? 'active' : ''}}" bindtap="showCustomThreshold">自定义</view>
               </view>
             </view>
-          </view>
-          
-          <!-- 风扇状态区 -->
-          <view class="fan-showcase">
-            <view class="fan-header">
-              <text class="fan-title">风扇控制系统</text>
-              <view class="fan-indicator {{fanStatus === 'running' ? 'running' : 'stopped'}}"></view>
-            </view>
+            
             <view class="fan-display">
               <view class="fan-visual {{fanStatus === 'running' ? 'rotating' : 'stopped'}}">
                 <text class="fan-symbol">🌀</text>

@@ -1,0 +1,259 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 顶部状态栏 -->
+  <view class="status-bar">
+    <view class="status-left">
+      <text class="app-title">MQTT控制中心</text>
+    </view>
+    <view class="status-right">
+      <view class="status-indicator {{connectionStatus}}">
+        <text class="status-dot"></text>
+        <text class="status-text">{{connectionText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主内容区域 -->
+  <scroll-view class="main-content" scroll-y="true">
+    <!-- 首页 -->
+    <view wx:if="{{activeTab === 'home'}}">
+      <!-- 设备状态卡片 -->
+      <view class="status-card" wx:if="{{isConnected}}">
+        <view class="card-header">
+          <text class="card-title">压缩机实时监控</text>
+          <view class="status-badge online">LIVE</view>
+        </view>
+        
+        <!-- 风扇控制区域 -->
+        <view class="control-section">
+          <view class="section-title">风扇控制</view>
+          <view class="fan-status {{fanStatus === 'running' ? 'running' : 'stopped'}}">
+            <view class="fan-indicator {{fanStatus === 'running' ? 'running' : 'stopped'}}"></view>
+            <view class="fan-info">
+              <text class="fan-status-text">{{fanStatus === 'running' ? '风扇正常运转' : '风扇保护性停转'}}</text>
+              <text class="fan-reason">{{tempDiff !== null ? (tempDiff >= tempDiffThreshold ? '温度差超标触发保护' : '温度正常维持运转') : '等待传感器数据'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 温度监控区域 -->
+        <view class="monitor-section">
+          <view class="section-title">温度监控</view>
+          <view class="temp-display">
+            <view class="temp-item">
+              <text class="temp-label">进温</text>
+              <text class="temp-value">{{comp1InTemp !== null ? comp1InTemp + '°F' : '--'}}</text>
+            </view>
+            <view class="temp-arrow">→</view>
+            <view class="temp-item">
+              <text class="temp-label">出温</text>
+              <text class="temp-value">{{comp1OutTemp !== null ? comp1OutTemp + '°F' : '--'}}</text>
+            </view>
+          </view>
+          <view class="threshold-setting">
+            <text class="threshold-label">温差阈值</text>
+            <picker mode="selector" range="{{tempDiffOptions}}" value="{{tempDiffIndex}}" bindchange="onTempDiffChange">
+              <view class="threshold-picker">
+                <text>{{tempDiffThreshold}}°C</text>
+                <text class="picker-arrow">▼</text>
+              </view>
+            </picker>
+          </view>
+        </view>
+      </view>
+
+      <!-- 控制按钮区域 -->
+      <view class="control-buttons" wx:if="{{isConnected}}">
+        <view class="button-row">
+          <button class="control-btn primary" bindtap="sendTestMessage">
+            <text class="btn-icon">⚡</text>
+            <text class="btn-text">发送测试</text>
+          </button>
+          <button class="control-btn secondary" bindtap="clearMessages">
+            <text class="btn-icon">🗑️</text>
+            <text class="btn-text">清空记录</text>
+          </button>
+        </view>
+        <view class="button-row">
+          <button class="control-btn info" bindtap="switchTab" data-tab="messages">
+            <text class="btn-icon">📋</text>
+            <text class="btn-text">消息列表</text>
+          </button>
+          <button class="control-btn warning" bindtap="switchTab" data-tab="settings">
+            <text class="btn-icon">⚙️</text>
+            <text class="btn-text">系统设置</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 设备选择器 -->
+      <view class="device-selector" wx:if="{{isConnected && deviceList.length > 1}}">
+        <view class="selector-label">选择设备</view>
+        <picker bindchange="onDeviceSelect" range="{{deviceList}}" range-key="name">
+          <view class="device-picker">
+            <text class="selected-device">{{currentDeviceName || '未选择'}}</text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 最近消息预览 -->
+      <view class="recent-messages" wx:if="{{messages.length > 0}}">
+        <view class="section-header">
+          <text class="section-title">消息历史</text>
+          <view class="view-all" bindtap="switchTab" data-tab="messages">
+            <text>查看全部</text>
+            <text class="arrow">></text>
+          </view>
+        </view>
+        <view class="message-list">
+          <view wx:for="{{messages.slice(0, 3)}}" wx:key="index" class="message-item {{item.direction || 'received'}}">
+            <view class="message-dot {{item.direction || 'received'}}"></view>
+            <view class="message-content">
+              <text class="message-topic">{{item.topic}}</text>
+              <text class="message-payload">{{item.payload.length > 30 ? item.payload.substring(0, 30) + '...' : item.payload}}</text>
+            </view>
+            <text class="message-time">{{item.timestamp}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 消息页面 -->
+    <view wx:if="{{activeTab === 'messages'}}">
+      <!-- 消息过滤 -->
+      <view class="filter-bar">
+        <view class="filter-tabs">
+          <view class="filter-tab {{messageType === 'all' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="all">
+            <text>全部</text>
+          </view>
+          <view class="filter-tab {{messageType === 'received' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="received">
+            <text>接收</text>
+          </view>
+          <view class="filter-tab {{messageType === 'sent' ? 'active' : ''}}" bindtap="onFilterTagTap" data-type="sent">
+            <text>发送</text>
+          </view>
+        </view>
+        <view class="search-box">
+          <input class="search-input" placeholder="搜索消息..." value="{{filterKeyword}}" bindinput="onFilterKeywordInput" />
+        </view>
+      </view>
+
+      <!-- 消息列表 -->
+      <view class="messages-container">
+        <view class="list-header">
+          <text class="list-count">共 {{filteredMessages.length}} 条消息</text>
+        </view>
+        <view class="full-message-list">
+          <view wx:for="{{filteredMessages}}" wx:key="index" class="full-message-item {{item.direction || 'received'}}">
+            <view class="item-header">
+              <view class="type-badge {{item.direction || 'received'}}">
+                <text>{{item.direction === 'sent' ? '↑ 发送' : '↓ 接收'}}</text>
+              </view>
+              <text class="item-time">{{item.timestamp}}</text>
+            </view>
+            <view class="item-body">
+              <text class="item-topic">{{item.topic}}</text>
+              <text class="item-payload">{{item.payload}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 导出按钮 -->
+      <view class="export-section" wx:if="{{filteredMessages.length > 0}}">
+        <button class="export-btn" bindtap="exportMessagesAsJson">
+          <text class="export-icon">📄</text>
+          <text>导出 JSON</text>
+        </button>
+        <button class="export-btn" bindtap="exportMessagesAsCsv">
+          <text class="export-icon">📊</text>
+          <text>导出 CSV</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- 设置页面 -->
+    <view wx:if="{{activeTab === 'settings'}}">
+      <!-- 服务器配置 -->
+      <view class="config-section">
+        <view class="section-title">服务器配置</view>
+        <view class="form-list">
+          <view class="form-item">
+            <text class="form-label">服务器地址</text>
+            <input class="form-input" value="{{serverConfig.broker}}" bindinput="onBrokerInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">端口</text>
+            <input class="form-input" type="number" value="{{serverConfig.port}}" bindinput="onPortInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">协议</text>
+            <picker mode="selector" range="{{['wss', 'ws']}}" value="{{serverConfig.protocol === 'wss' ? 0 : 1}}" bindchange="onProtocolChange">
+              <view class="picker-item">{{serverConfig.protocol}}</view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <text class="form-label">客户端ID</text>
+            <input class="form-input" value="{{serverConfig.clientId}}" bindinput="onClientIdInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">用户名</text>
+            <input class="form-input" value="{{serverConfig.username}}" bindinput="onUsernameInput" />
+          </view>
+          <view class="form-item">
+            <text class="form-label">密码</text>
+            <input class="form-input" password="{{!showPassword}}" value="{{serverConfig.password}}" bindinput="onPasswordInput" />
+          </view>
+        </view>
+        <view class="action-buttons">
+          <button class="action-btn secondary" bindtap="resetToDefault">重置</button>
+          <button class="action-btn primary" bindtap="saveServerConfig">保存配置</button>
+        </view>
+      </view>
+
+      <!-- 数据统计 -->
+      <view class="stats-section">
+        <view class="section-title">数据统计</view>
+        <view class="stats-grid">
+          <view class="stat-item">
+            <view class="stat-icon receive">↓</view>
+            <text class="stat-number">{{receivedMessageCount}}</text>
+            <text class="stat-label">接收消息</text>
+          </view>
+          <view class="stat-item">
+            <view class="stat-icon send">↑</view>
+            <text class="stat-number">{{sentMessageCount}}</text>
+            <text class="stat-label">发送消息</text>
+          </view>
+          <view class="stat-item">
+            <view class="stat-icon topic">#</view>
+            <text class="stat-number">{{subscribedTopics.length}}</text>
+            <text class="stat-label">订阅主题</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view class="nav-item {{activeTab === 'home' ? 'active' : ''}}" bindtap="switchTab" data-tab="home">
+      <view class="nav-icon">🏠</view>
+      <text class="nav-label">首页</text>
+    </view>
+    <view class="nav-item" bindtap="navigateToDevice">
+      <view class="nav-icon">📱</view>
+      <text class="nav-label">设备</text>
+    </view>
+    <view class="nav-item {{activeTab === 'messages' ? 'active' : ''}}" bindtap="switchTab" data-tab="messages">
+      <view class="nav-icon">📋</view>
+      <text class="nav-label">消息</text>
+      <view class="nav-badge" wx:if="{{messages.length > 0}}">{{messages.length > 99 ? '99+' : messages.length}}</view>
+    </view>
+    <view class="nav-item {{activeTab === 'settings' ? 'active' : ''}}" bindtap="switchTab" data-tab="settings">
+      <view class="nav-icon">⚙️</view>
+      <text class="nav-label">设置</text>
+    </view>
+  </view>
+</view>

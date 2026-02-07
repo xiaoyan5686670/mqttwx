@@ -267,6 +267,16 @@ page {
   position: relative;
 }
 
+/* 风扇头部+温度组合区域 - 新增 */
+.fan-header-with-temp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(0, 245, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+}
+
 .compressor-showcase::before {
   content: '';
   position: absolute;
@@ -353,15 +363,16 @@ page {
 }
 
 /* 温度展示区 */
-.temp-showcase {
-  margin-bottom: 16px;
-}
-
 .temp-flow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 0; /* 在组合区域中不需要底部间距 */
+}
+
+.temp-flow.compact {
+  flex: 1;
+  margin-right: 20px; /* 与风扇头部保持间距 */
 }
 
 .temp-point {
