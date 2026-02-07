@@ -267,23 +267,9 @@ page {
   position: relative;
 }
 
-/* 压缩机仪表板 - 水平布局整合温度和风扇控制 */
+/* 压缩机仪表板 - 垂直布局，优化内部间距减少高度 */
 .compressor-dashboard {
-  display: flex;
-  padding: 16px 20px 20px;
-  gap: 20px;
-}
-
-/* 温度显示区 - 占据左侧空间 */
-.temp-showcase {
-  flex: 1;
-  min-width: 0; /* 防止flex子项溢出 */
-}
-
-/* 风扇状态区 - 占据右侧空间 */
-.fan-showcase {
-  flex: 1;
-  min-width: 0; /* 防止flex子项溢出 */
+  padding: 12px 20px 16px;
 }
 
 .compressor-showcase::before {
@@ -373,8 +359,7 @@ page {
 
 /* 温度展示区 */
 .temp-showcase {
-  margin-bottom: 0; /* 在flex布局中不需要底部间距 */
-  height: fit-content;
+  margin-bottom: 12px;
 }
 
 .temp-flow {
@@ -388,12 +373,12 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 12px 10px;
+  gap: 4px;
+  padding: 10px 8px;
   background: rgba(0, 245, 255, 0.08);
   border: 1px solid rgba(0, 245, 255, 0.2);
-  border-radius: 10px;
-  min-width: 70px;
+  border-radius: 8px;
+  min-width: 65px;
 }
 
 .temp-point.inlet {
@@ -455,11 +440,11 @@ page {
 
 /* 自定义温差设置 - 更紧凑的设计 */
 .temp-threshold-setting {
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: rgba(0, 245, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid rgba(0, 245, 255, 0.2);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .threshold-header {
@@ -512,9 +497,9 @@ page {
 
 /* 风扇展示区 */
 .fan-showcase {
-  padding: 10px 14px;
+  padding: 8px 12px;
   background: rgba(0, 245, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid rgba(0, 245, 255, 0.2);
 }
 
