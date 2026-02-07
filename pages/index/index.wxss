@@ -267,14 +267,23 @@ page {
   position: relative;
 }
 
-/* 风扇头部+温度组合区域 - 新增 */
-.fan-header-with-temp {
+/* 压缩机仪表板 - 水平布局整合温度和风扇控制 */
+.compressor-dashboard {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: rgba(0, 245, 255, 0.03);
-  border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+  padding: 16px 20px 20px;
+  gap: 20px;
+}
+
+/* 温度显示区 - 占据左侧空间 */
+.temp-showcase {
+  flex: 1;
+  min-width: 0; /* 防止flex子项溢出 */
+}
+
+/* 风扇状态区 - 占据右侧空间 */
+.fan-showcase {
+  flex: 1;
+  min-width: 0; /* 防止flex子项溢出 */
 }
 
 .compressor-showcase::before {
@@ -297,7 +306,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 12px 20px;
   background: rgba(0, 245, 255, 0.05);
   border-bottom: 1px solid rgba(0, 245, 255, 0.2);
 }
@@ -359,20 +368,20 @@ page {
 }
 
 .compressor-dashboard {
-  padding: 16px 20px 20px;
+  padding: 12px 20px 16px;
 }
 
 /* 温度展示区 */
+.temp-showcase {
+  margin-bottom: 0; /* 在flex布局中不需要底部间距 */
+  height: fit-content;
+}
+
 .temp-flow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0; /* 在组合区域中不需要底部间距 */
-}
-
-.temp-flow.compact {
-  flex: 1;
-  margin-right: 20px; /* 与风扇头部保持间距 */
+  margin-bottom: 12px;
 }
 
 .temp-point {
@@ -503,9 +512,9 @@ page {
 
 /* 风扇展示区 */
 .fan-showcase {
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: rgba(0, 245, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid rgba(0, 245, 255, 0.2);
 }
 
