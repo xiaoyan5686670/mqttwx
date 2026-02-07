@@ -87,17 +87,17 @@ eb<!-- 科技风格布局 -->
               </view>
             </view>
             
-            <!-- 温差显示 -->
-            <view class="temp-diff-showcase">
-              <view class="diff-circle {{tempDiff >= tempDiffThreshold ? 'high-temp' : 'normal-temp'}}">
-                <text class="diff-number">{{tempDiff !== null ? tempDiff : '--'}}</text>
-                <text class="diff-unit">°C</text>
+            <!-- 自定义温差设置 -->
+            <view class="temp-threshold-setting">
+              <view class="threshold-header">
+                <text class="threshold-label">风扇保护温差</text>
+                <text class="threshold-value">{{tempDiffThreshold}}°C</text>
               </view>
-              <view class="diff-info">
-                <text class="diff-label">温差</text>
-                <text class="diff-status {{tempDiff >= tempDiffThreshold ? 'warning' : 'normal'}}">
-                  {{tempDiff !== null ? (tempDiff >= tempDiffThreshold ? '过高' : '正常') : '待检测'}}
-                </text>
+              <view class="threshold-options">
+                <view class="threshold-option {{tempDiffThreshold == 10 ? 'active' : ''}}" bindtap="setTempDiffThreshold" data-value="10">10℃</view>
+                <view class="threshold-option {{tempDiffThreshold == 15 ? 'active' : ''}}" bindtap="setTempDiffThreshold" data-value="15">15℃</view>
+                <view class="threshold-option {{tempDiffThreshold == 20 ? 'active' : ''}}" bindtap="setTempDiffThreshold" data-value="20">20℃</view>
+                <view class="threshold-option {{tempDiffThreshold != 10 && tempDiffThreshold != 15 && tempDiffThreshold != 20 ? 'active' : ''}}" bindtap="showCustomThreshold">自定义</view>
               </view>
             </view>
           </view>

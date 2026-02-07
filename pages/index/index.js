@@ -1213,6 +1213,49 @@ Page({
     });
   },
 
+  // 设置温差阈值
+  setTempDiffThreshold(e) {
+    const threshold = parseInt(e.currentTarget.dataset.value);
+    this.setData({
+      tempDiffThreshold: threshold,
+      debugInfo: `风扇保护温差已设置为 ${threshold}°C`
+    });
+    wx.showToast({
+      title: `已设置为${threshold}°C`,
+      icon: 'success'
+    });
+  },
+
+  // 显示自定义温差输入
+  showCustomThreshold() {
+    wx.showModal({
+      title: '自定义温差',
+      content: '请输入风扇保护温差值（°C）',
+      editable: true,
+      placeholderText: String(this.data.tempDiffThreshold),
+      success: (res) => {
+        if (res.confirm && res.content) {
+          const value = parseInt(res.content);
+          if (!isNaN(value) && value > 0 && value <= 50) {
+            this.setData({
+              tempDiffThreshold: value,
+              debugInfo: `风扇保护温差已设置为 ${value}°C`
+            });
+            wx.showToast({
+              title: `已设置为${value}°C`,
+              icon: 'success'
+            });
+          } else {
+            wx.showToast({
+              title: '请输入有效数值(1-50)',
+              icon: 'none'
+            });
+          }
+        }
+      }
+    });
+  },
+
   // 其他实用功能
   generateClientId() {
     const clientId = 'miniprogram_' + Math.random().toString(16).substr(2, 8);
